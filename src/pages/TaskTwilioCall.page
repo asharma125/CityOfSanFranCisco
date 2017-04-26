@@ -1,0 +1,30 @@
+<apex:page standardController="task" extensions="TaskTwilioCall" sidebar="false" showchat="false" showheader="false">
+    <script>
+        function MakeCall(){
+            if("{!To}".length != 12){
+                var l = "{!To}".length;
+               
+                alert("Dialed Number should be of 12 digits including country code (91). Your Dialed Number is of "+l+" digits");
+            }else if("{!FromN}".length != 12){
+                var l2 = "{!FromN}".length;
+               
+                alert("Please check your Number on User record. It Should be of 12 digits including country code (91). Your Number on user record is of "+l2+" digits.");
+            }else{
+                call(); 
+                document.getElementById("button").value = "Calling..."; 
+            }
+        }
+    </script>
+    <apex:form >
+        <apex:actionFunction action="{!MakeCall}" name="call" reRender="ff"/>
+        <table style="width:100%">
+            <tr>
+                <th style="width:33%;text-align:right">Phone</th>
+                <td style="width:19%;text-align:left;padding-left:19px;">{!Phone}</td>
+                <td ><input id="button" type="button" value="Click To Call" onclick="MakeCall();" 
+                    style="display:{!if(showClickToCall && To != null && To != '' && FromN != null && FromN != '','block','none')}"/></td>
+            </tr>
+        </table>
+        
+    </apex:form>
+</apex:page>

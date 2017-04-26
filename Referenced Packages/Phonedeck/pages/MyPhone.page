@@ -1,0 +1,21 @@
+<apex:page controller="deskio.MyPhoneController" tabStyle="MyPhone__tab">
+
+	<apex:sectionHeader title="Phonedeck" subtitle="My Phone" />
+
+	<apex:outputPanel rendered="{!mode == 'PHONE'}">
+		<apex:detail subject="{!phone.Id}" title="false" />
+	</apex:outputPanel>
+
+	<apex:outputPanel rendered="{!mode == 'NO_PHONE'}">
+		<apex:pageBlock mode="detail" title="Call Support">
+			<p>To support incoming and outgoing calls in Salesforce your phone needs additional configuration. Please follow the link below to continue.</p>
+			<p><a href="https://phonedeck.com/documentation/connecting-smartphones/" target="_blank">Get more information</a></p>
+		</apex:pageBlock>
+	</apex:outputPanel>
+
+	<apex:outputPanel rendered="{!mode == 'NO_PERMISSION'}">
+		<apex:pageMessage summary="Your Administrator did not grant you the appropriate permissions to use Phonedeck CSI."
+			severity="error" strength="3" />
+	</apex:outputPanel>
+
+</apex:page>

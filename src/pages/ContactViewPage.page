@@ -1,0 +1,4 @@
+<apex:page standardController="Contact">
+    <apex:detail subject="{!Contact.Id}" />
+
+</apex:page>

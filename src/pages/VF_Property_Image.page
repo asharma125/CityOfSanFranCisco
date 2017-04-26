@@ -1,0 +1,11 @@
+<apex:page standardController="Property__c" extensions="CLS_Property_Image" sidebar="false" >
+  <apex:pageBlock >
+  <apex:pageBlockSection columns="2">
+  <apex:repeat value="{!lstupd}" var="a">  
+  <apex:image value="{!a}" height="auto" width="auto"/>
+  </apex:repeat>
+  </apex:pageBlockSection> 
+  </apex:pageBlock> 
+  
+  
+</apex:page>

@@ -1,0 +1,445 @@
+<apex:page standardController="Property__c"  extensions="Acres_99_Fill_up_form"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   renderAs="{!renderAs}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Property__c";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<style>
+{!HTMLENCODE(pdfStyleString)}
+</style></head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+
+</script>
+<script type="text/javascript" import="true">
+
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:outputPanel style="position:relative;" >
+</apex:outputPanel><apex:form id="sve_form1"   styleClass="sve_form1"   >
+<apex:outputPanel id="Component2_Wrapper" styleClass="">
+<apex:pageBlock id="Component2"   mode="detail"   title="FILL UP FORM FOR LISTING ON 99 ACRES"   >
+<apex:pageBlockButtons location="both"   >
+<apex:commandButton action="{!doSave}"   id="Component3"   value="{!customSaveButtonLabel}"   style="width:50px;"   rendered="{!OR($ObjectType.Property__c.createable,$ObjectType.Property__c.updateable)}" />
+<apex:commandButton action="{!cancel}"   id="Component4"   rendered="{!!sve_showDeleteCancel}"   value="{!customCancelButtonLabel}"   style="width:66px;" /></apex:pageBlockButtons><apex:outputPanel id="Component5_Wrapper"   layout="block"   styleClass="columns3"   style="border:4px solid #000000;border-bottom-left-radius:0px;border-bottom-right-radius:0px;" >
+<apex:pageBlockSection collapsible="true"   columns="3"   id="Component5"   showHeader="true"   title="LOCATION DETAILS"  >
+<apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component7_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component7_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component8"   rendered="{!$ObjectType.Property__c.fields.Tenant_Sale__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Tenant_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component8}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:235px;white-space:nowrap;" >
+<apex:inputField id="Component7"   required="true"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Tenant_Sale__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Send_to_Website__c.accessible,$ObjectType.Property__c.fields.Send_to_Website__c.inlineHelpText,null)}"   id="Component22_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component22_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component23"   rendered="{!$ObjectType.Property__c.fields.Send_to_Website__c.accessible}"   style="width:100px;" value=" LIST ON 99 ACRES" onclick="SkyEditor.touchToolTip('{!$Component.Component23}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component22"   required="true"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Send_to_Website__c}">
+</apex:inputField>
+<script>
+SkyEditor.setCheckBoxDefaultValue('{! $Component.Component22}',{!record.Send_to_Website__c});
+</script>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.For_Sale__c.accessible,$ObjectType.Property__c.fields.For_Sale__c.inlineHelpText,null)}"   id="Component330"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component330}');}">
+<apex:outputLabel escape="true"   id="Component328"   rendered="{!$ObjectType.Property__c.fields.For_Sale__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.For_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component328}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component329"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.For_Sale__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Property_Name__c.accessible,$ObjectType.Property__c.fields.Property_Name__c.inlineHelpText,null)}"   id="Component13_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component13_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component14"   rendered="{!$ObjectType.Property__c.fields.Property_Name__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Property_Name__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component14}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component13"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Property_Name__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component43_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component43_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component44"   rendered="{!$ObjectType.Property__c.fields.Location_City_new__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Location_City_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component44}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component43"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Location_City_new__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component46_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component46_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component47"   rendered="{!$ObjectType.Property__c.fields.Rented__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Rented__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component47}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:actionRegion ><apex:inputField id="Component46"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Rented__c}">
+<apex:actionSupport action="{!null}"   event="onclick"   reRender="Component122_Wrapper,messagesPanel"  /></apex:inputField>
+</apex:actionRegion></apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Property_No__c.accessible,$ObjectType.Property__c.fields.Property_No__c.inlineHelpText,null)}"   id="Component25_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component25_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component26"   rendered="{!$ObjectType.Property__c.fields.Property_No__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Property_No__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component26}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component25"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Property_No__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component34_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component34_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component35"   rendered="{!$ObjectType.Property__c.fields.Location_new__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Location_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component35}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component34"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Location_new__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component338"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component338}');}">
+<apex:outputLabel escape="true"   id="Component336"   rendered="{!$ObjectType.Property__c.fields.ROI_Calculator_Link__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.ROI_Calculator_Link__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component336}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component337"     value="{!record.ROI_Calculator_Link__c}" />
+</apex:outputPanel>
+</apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component28_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component28_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component29"   rendered="{!$ObjectType.Property__c.fields.Address__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Address__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component29}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component28"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Address__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component40_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component40_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component41"   rendered="{!$ObjectType.Property__c.fields.Location_Sub_new__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Location_Sub_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component41}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component40"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Location_Sub_new__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel></apex:pageBlockSection>
+<script type="text/javascript">
+	decorateSectionHeader('Component5', {"isFirstSection":true,"isTextColorSetting":true,"textColor":"#FFFFFF","isBackgroundColor":true,"backgroundColor":"#666699","isMarginRemove":true});
+	if(SkyEditor.isSalesforce1()){
+		var imgUrl = "{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/helpimg.png')}"
+		SkyEditor.sveHelpImageForSalesforce1(imgUrl, jQuery('.sve_pbSectionItem .helpButton img.helpOrb'));
+	}
+</script></apex:outputPanel><apex:outputPanel id="Component103_Wrapper"   layout="block"   styleClass="columns3"   style="border:4px solid #000000;border-bottom-left-radius:0px;border-bottom-right-radius:0px;" >
+<apex:pageBlockSection collapsible="true"   columns="3"   id="Component103"   showHeader="true"   title="PROPERTY ADVERTISEMENT DETAILS"  >
+<apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component108_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component108_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component109"   rendered="{!$ObjectType.Property__c.fields.Type_of_Property__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Type_of_Property__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component109}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component108"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Type_of_Property__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Property_Topic__c.accessible,$ObjectType.Property__c.fields.Property_Topic__c.inlineHelpText,null)}"   id="Component10_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component10_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component11"   rendered="{!$ObjectType.Property__c.fields.Property_Topic__c.accessible}"   style="width:100px;" value="Additional Address" onclick="SkyEditor.touchToolTip('{!$Component.Component11}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:235px;white-space:nowrap;" >
+<apex:inputField id="Component10"   required="true"   style="width:228px;height:45px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Property_Topic__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component208_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component208_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component209"   rendered="{!$ObjectType.Property__c.fields.Sale_Price__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Sale_Price__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component209}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component208"   required="true"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Sale_Price__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component114_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component114_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component115"   rendered="{!$ObjectType.Property__c.fields.Type_of_Commercial_Residential_Property__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Type_of_Commercial_Residential_Property__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component115}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component114"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Type_of_Commercial_Residential_Property__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component157_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component157_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component158"   rendered="{!$ObjectType.Property__c.fields.Area_for_Sale__c.accessible}"   style="width:100px;" value="Built-up Area" onclick="SkyEditor.touchToolTip('{!$Component.Component158}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component157"   required="true"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Area_for_Sale__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component120_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component120_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component121"   rendered="{!$ObjectType.Property__c.fields.Transaction_Type__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Transaction_Type__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component121}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component120"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Transaction_Type__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component217_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component217_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component218"   rendered="{!$ObjectType.Property__c.fields.Plot_Area_Yards__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Plot_Area_Yards__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component218}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component217"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Plot_Area_Yards__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component169_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component169_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component170"   rendered="{!$ObjectType.Property__c.fields.Land_Status__c.accessible}"   style="width:100px;" value="Property Ownership" onclick="SkyEditor.touchToolTip('{!$Component.Component170}');"/>
+<apex:outputPanel >
+<table   border="0"   cellpadding="0"   cellspacing="0"   class="wrapperTable"  >
+<tr>
+<td  >
+<apex:outputPanel id="Component169_wrapper"   >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component169"   required="true"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Land_Status__c}">
+</apex:inputField>
+<script type="text/javascript">
+var id = "{!$Component.Component169}";
+SkyEditor.smallMonitorInputMultiSelect(id);
+</script>
+</apex:outputPanel>
+ </apex:outputPanel></td></tr>
+</table></apex:outputPanel></apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel><apex:outputPanel ></apex:outputPanel><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component223_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component223_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component224"   rendered="{!$ObjectType.Property__c.fields.Construction_Status__c.accessible}"   style="width:100px;" value="Availability" onclick="SkyEditor.touchToolTip('{!$Component.Component224}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:114px;white-space:nowrap;" >
+<apex:inputField id="Component223"   required="true"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Construction_Status__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel><apex:outputPanel ></apex:outputPanel><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component142_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component142_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component143"   rendered="{!$ObjectType.Property__c.fields.Possession_Handover__c.accessible}"   style="width:100px;" value="Possession of Property" onclick="SkyEditor.touchToolTip('{!$Component.Component143}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="display:block;text-align:left;width:204px;white-space:nowrap;" >
+<apex:inputField id="Component142"   required="true"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Possession_Handover__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem></apex:pageBlockSection>
+<script type="text/javascript">
+	decorateSectionHeader('Component103', {"isFirstSection":false,"isTextColorSetting":true,"textColor":"#FFFFFF","isBackgroundColor":true,"backgroundColor":"#666699","isMarginRemove":true});
+	if(SkyEditor.isSalesforce1()){
+		var imgUrl = "{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/helpimg.png')}"
+		SkyEditor.sveHelpImageForSalesforce1(imgUrl, jQuery('.sve_pbSectionItem .helpButton img.helpOrb'));
+	}
+</script></apex:outputPanel><apex:outputPanel id="Component122_Wrapper"   layout="block"   styleClass="columns3"   style="border:4px solid #000000;border-bottom-left-radius:0px;border-bottom-right-radius:0px;" >
+<apex:pageBlockSection collapsible="true"   columns="3"   id="Component122"   rendered="{!Component122_rendered}"   showHeader="true"   title="Rented Details"  >
+<apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.No_of_Units__c.accessible,$ObjectType.Property__c.fields.No_of_Units__c.inlineHelpText,null)}"   id="Component124_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component124_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component125"   rendered="{!$ObjectType.Property__c.fields.No_of_Units__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.No_of_Units__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component125}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component124"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.No_of_Units__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Total_Area_on_Lease__c.accessible,$ObjectType.Property__c.fields.Total_Area_on_Lease__c.inlineHelpText,null)}"   id="Component151_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component151_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component152"   rendered="{!$ObjectType.Property__c.fields.Total_Area_on_Lease__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Total_Area_on_Lease__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component152}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component151"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Total_Area_on_Lease__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component190_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component190_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component191"   rendered="{!$ObjectType.Property__c.fields.Lock_In__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Lock_In__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component191}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component190"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Lock_In__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component145_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component145_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component146"   rendered="{!$ObjectType.Property__c.fields.Floor_Sale__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Floor_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component146}');"/>
+<apex:outputPanel >
+<table   border="0"   cellpadding="0"   cellspacing="0"   class="wrapperTable"  >
+<tr>
+<td  >
+<apex:outputPanel id="Component145_wrapper"   >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component145"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Floor_Sale__c}">
+</apex:inputField>
+<script type="text/javascript">
+var id = "{!$Component.Component145}";
+SkyEditor.smallMonitorInputMultiSelect(id);
+</script>
+</apex:outputPanel>
+ </apex:outputPanel></td></tr>
+</table></apex:outputPanel></apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component163_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component163_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component164"   rendered="{!$ObjectType.Property__c.fields.Monthly_Rent__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Monthly_Rent__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component164}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component163"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Monthly_Rent__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component178_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component178_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component179"   rendered="{!$ObjectType.Property__c.fields.Lease_Date__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Lease_Date__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component179}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component178"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Lease_Date__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component220_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component220_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component221"   rendered="{!$ObjectType.Property__c.fields.Built_Up_Area__c.accessible}"   style="width:100px;" value="Floorwise Area (Sq.Ft.)" onclick="SkyEditor.touchToolTip('{!$Component.Component221}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component220"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Built_Up_Area__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Security_Deposit__c.accessible,$ObjectType.Property__c.fields.Security_Deposit__c.inlineHelpText,null)}"   id="Component172_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component172_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component173"   rendered="{!$ObjectType.Property__c.fields.Security_Deposit__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Security_Deposit__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component173}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component172"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Security_Deposit__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component184_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component184_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component185"   rendered="{!$ObjectType.Property__c.fields.Lease_Tenure__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Lease_Tenure__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component185}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component184"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Lease_Tenure__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component202_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component202_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component203"   rendered="{!$ObjectType.Property__c.fields.ROI__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.ROI__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component203}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component202"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.ROI__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Rent_Escalation__c.accessible,$ObjectType.Property__c.fields.Rent_Escalation__c.inlineHelpText,null)}"   id="Component196_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component196_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component197"   rendered="{!$ObjectType.Property__c.fields.Rent_Escalation__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Rent_Escalation__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component197}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component196"   style="width:228px;height:20px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Rent_Escalation__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component211_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component211_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component212"   rendered="{!$ObjectType.Property__c.fields.May_Settle_Sale_Price__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.May_Settle_Sale_Price__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component212}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component211"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.May_Settle_Sale_Price__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:outputPanel ></apex:outputPanel><apex:outputPanel ></apex:outputPanel></apex:pageBlockSection>
+<script type="text/javascript">
+	decorateSectionHeader('Component122', {"isFirstSection":false,"isTextColorSetting":true,"textColor":"#FFFFFF","isBackgroundColor":true,"backgroundColor":"#666699","isMarginRemove":true});
+	if(SkyEditor.isSalesforce1()){
+		var imgUrl = "{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/helpimg.png')}"
+		SkyEditor.sveHelpImageForSalesforce1(imgUrl, jQuery('.sve_pbSectionItem .helpButton img.helpOrb'));
+	}
+</script></apex:outputPanel><apex:outputPanel id="Component335_Wrapper"   layout="block"   styleClass="columns2"   style="border:4px solid #000000;border-bottom-left-radius:0px;border-bottom-right-radius:0px;" >
+<apex:pageBlockSection collapsible="true"   columns="2"   id="Component335"   showHeader="true"   title="ADDITIONAL INFO"  >
+<apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component232_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component232_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component233"   rendered="{!$ObjectType.Property__c.fields.Sale_Remarks__c.accessible}"   style="width:100px;" value="Sale Remarks" onclick="SkyEditor.touchToolTip('{!$Component.Component233}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component232"   style="width:228px;height:96px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Sale_Remarks__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Budget_Suits__c.accessible,$ObjectType.Property__c.fields.Budget_Suits__c.inlineHelpText,null)}"   id="Component187_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component187_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component188"   rendered="{!$ObjectType.Property__c.fields.Budget_Suits__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Budget_Suits__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component188}');"/>
+<apex:outputPanel >
+<table   border="0"   cellpadding="0"   cellspacing="0"   class="wrapperTable"  >
+<tr>
+<td  >
+<apex:outputPanel id="Component187_wrapper"   >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component187"   required="true"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Budget_Suits__c}">
+</apex:inputField>
+<script type="text/javascript">
+var id = "{!$Component.Component187}";
+SkyEditor.smallMonitorInputMultiSelect(id);
+</script>
+</apex:outputPanel>
+ </apex:outputPanel></td></tr>
+</table></apex:outputPanel></apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   id="Component229_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component229_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component230"   rendered="{!$ObjectType.Property__c.fields.Rented_Remarks__c.accessible}"   style="width:100px;" value="Rented Remarks" onclick="SkyEditor.touchToolTip('{!$Component.Component230}');"/>
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component229"   style="width:228px;height:96px;color:#000000;font-size:1.0em;font-weight:Normal;text-align:left;"   value="{!record.Rented_Remarks__c}">
+</apex:inputField>
+</apex:outputPanel>
+ </apex:pageBlockSectionItem><apex:pageBlockSectionItem labelStyleClass="sve_pbSectionItem"   helpText="{!IF($ObjectType.Property__c.fields.Area_Suits__c.accessible,$ObjectType.Property__c.fields.Area_Suits__c.inlineHelpText,null)}"   id="Component193_sectionItem"    onLabelclick="if(SkyEditor.isAndroid){SkyEditor.touchToolTip('{!$Component.Component193_sectionItem}');}">
+<apex:outputLabel escape="true"   id="Component194"   rendered="{!$ObjectType.Property__c.fields.Area_Suits__c.accessible}"   style="width:100px;" value="{!$ObjectType.Property__c.fields.Area_Suits__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component194}');"/>
+<apex:outputPanel >
+<table   border="0"   cellpadding="0"   cellspacing="0"   class="wrapperTable"  >
+<tr>
+<td  >
+<apex:outputPanel id="Component193_wrapper"   >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component193"   required="true"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!record.Area_Suits__c}">
+</apex:inputField>
+<script type="text/javascript">
+var id = "{!$Component.Component193}";
+SkyEditor.smallMonitorInputMultiSelect(id);
+</script>
+</apex:outputPanel>
+ </apex:outputPanel></td></tr>
+</table></apex:outputPanel></apex:pageBlockSectionItem></apex:pageBlockSection>
+<script type="text/javascript">
+	decorateSectionHeader('Component335', {"isFirstSection":false,"isTextColorSetting":true,"textColor":"#FFFFFF","isBackgroundColor":true,"backgroundColor":"#666699","isMarginRemove":true});
+	if(SkyEditor.isSalesforce1()){
+		var imgUrl = "{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/helpimg.png')}"
+		SkyEditor.sveHelpImageForSalesforce1(imgUrl, jQuery('.sve_pbSectionItem .helpButton img.helpOrb'));
+	}
+</script></apex:outputPanel></apex:pageBlock>
+</apex:outputPanel></apex:form><apex:outputPanel style="position:relative;" >
+</apex:outputPanel><script type="text/javascript">
+function aggregateCalc_all(triggerId) {
+}
+</script>
+</apex:outputPanel>
+</td></tr></table>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

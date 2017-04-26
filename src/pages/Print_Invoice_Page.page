@@ -1,0 +1,211 @@
+<apex:page standardController="Invoice__c"  extensions="Print_Invoice_Page"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   renderAs="{!renderAs}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Invoice__c";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<style>
+{!HTMLENCODE(pdfStyleString)}
+</style></head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:outputPanel style="position:relative;" >
+</apex:outputPanel><apex:form id="sve_form1"   styleClass="sve_form1"   >
+<apex:outputPanel layout="block"   style="position:relative;width:756px;height:1057px;" >
+<img   src="{!URLFOR($Resource.Invoice_Sample)}"   style="width:756px;height:1068px;left:0px;top:0px;position:absolute;" /><apex:outputPanel styleclass="fieldwrapper " style="left:646px;top:190px;width:83px;color:#000000;font-size:9pt;font-weight:Normal;position:absolute;display:block;" >
+<apex:outputField id="Component32"     value="{!record.INV_No__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:49px;top:240px;width:249px;color:#000000;font-size:9pt;font-weight:Normal;position:absolute;display:block;" >
+				<apex:outputText escape="false"   id="Component1"    value="{!record.Billed_to_Contact_Name__c}" />
+	</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:49px;top:258px;width:249px;color:#000000;font-size:9pt;font-weight:Normal;position:absolute;display:block;" >
+<apex:outputField id="Component2"     value="{!record.Account__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:49px;top:277px;width:249px;color:#000000;font-size:9pt;font-weight:Normal;position:absolute;display:block;" >
+<apex:outputField id="Component3"     value="{!record.Billing_Address__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:84px;top:403px;width:90px;color:#000000;font-size:10pt;font-weight:Normal;text-align:center;position:absolute;display:block;" >
+<apex:outputField id="Component4"     value="{!record.Invoice_Date__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:216px;top:403px;width:154px;color:#000000;font-size:10pt;font-weight:Normal;text-align:center;position:absolute;display:block;" >
+<apex:outputField id="Component5"     value="{!record.Terms__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:419px;top:403px;width:90px;color:#000000;font-size:10pt;font-weight:Normal;text-align:center;position:absolute;display:block;" >
+<apex:outputField id="Component6"     value="{!record.Due_Date__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:50px;top:470px;width:122px;color:#000000;font-size:9pt;font-weight:Normal;text-align:left;position:absolute;display:block;" >
+<apex:outputField id="Component7"     value="{!record.Item_1__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:182px;top:470px;position:absolute;" >
+<apex:inputField id="Component9"   style="width:216px;height:67px;color:#000000;font-size:9pt;font-weight:Normal;text-align:left;"   value="{!record.Description_1__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:outputPanel styleclass="fieldwrapper " style="left:465px;top:470px;width:67px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component11"     value="{!record.Amount_1__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:470px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component12"     value="{!record.Amount_1__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:50px;top:551px;width:120px;color:#000000;font-size:9pt;font-weight:Normal;text-align:left;position:absolute;display:block;" >
+<apex:outputField id="Component14"     value="{!record.Item_2__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:182px;top:551px;position:absolute;" >
+<apex:inputField id="Component16"   style="width:216px;height:67px;color:#000000;font-size:9pt;font-weight:Normal;text-align:left;"   value="{!record.Description_2__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:outputPanel styleclass="fieldwrapper " style="left:465px;top:551px;width:67px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component17"     value="{!record.Amount_2__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:551px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component18"     value="{!record.Amount_2__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:782px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component19"     value="{!record.Sub_Total__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:815px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component20"     value="{!record.Total_Service_Tax_Amount__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:572px;top:818px;width:29px;color:#000000;font-size:8pt;font-weight:Normal;text-align:left;position:absolute;display:block;" >
+<apex:outputField id="Component21"     value="{!record.Service_Tax__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:838px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component25"     value="{!record.Sub_Total_Incl_Service_Tax__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:858px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component23"     value="{!record.Late_Fee__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:878px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component24"     value="{!record.Payment_Made__c}" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:895px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component31"     value="{!record.TDS_Amount__c}" />
+</apex:outputPanel>
+<apex:outputPanel id="Component30_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="left:535px;top:897px;position:absolute;">
+<apex:outputText escape="false"   id="Component30"   value="TDS Deducted:"   style="color:#000000;font-size:8pt;font-weight:Bold;" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:615px;top:915px;width:90px;color:#000000;font-size:9pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+<apex:outputField id="Component22"     value="{!record.Total__c}" />
+</apex:outputPanel>
+</apex:outputPanel></apex:form><script type="text/javascript">
+function aggregateCalc_all(triggerId) {
+}
+</script>
+</apex:outputPanel>
+</td></tr></table>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

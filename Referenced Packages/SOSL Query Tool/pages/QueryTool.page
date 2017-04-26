@@ -1,0 +1,26 @@
+<apex:page controller="SOSLQueryTool.QueryToolPageController">
+    <HEAD>
+        <STYLE TYPE="text/css" MEDIA="screen, print, projection">
+        .tableHeader {
+            width: 150px; background-color: #027c6f; color: white; padding: 5px; 5px; 5px; 5px; 
+        }
+        .wht {
+            color: white; font-weight: bold;
+        }
+        </STYLE>
+    </HEAD>
+
+    <apex:sectionHeader title="SOSL Query Tool"></apex:sectionHeader>
+        <apex:form id="searchForm">
+            <apex:pageBlock title="SOSL Query Input" id="queryBlock">
+                <apex:pageMessages ></apex:pageMessages>
+                Enter your query in the text area below and click on the 'Execute Query' button to view the results. <br /><br />
+                <b>Example query:</b> &nbsp; &nbsp;  find 'sa*' IN ALL FIELDS RETURNING Account(id,name),Contact, Lead <br /> <br />
+                <apex:inputTextarea id="theTextArea" value="{!inputTextValue}" rows="3" cols="100" ></apex:inputTextarea><br/><br/>
+                <apex:commandButton value="Execute Query" action="{!Run}" id="theButton" rerender="searchForm"></apex:commandButton>
+            </apex:pageBlock>
+        <apex:pageBlock title="SOSL Query Results" id="resultsBlock">
+            <apex:outputText escape="false" value="{!queryOutput}" />
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

@@ -1,0 +1,180 @@
+<apex:page standardController="Rented_Formula__c"  extensions="Rntd_p1"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   renderAs="{!renderAs}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   title="IndiaShowrooms Pre_Leased Calcculator"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Rented_Formula__c";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<style>
+{!HTMLENCODE(pdfStyleString)}
+</style> <title>IndiaShowrooms Pre_Leased Calcculator</title> </head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:outputPanel style="position:relative;" >
+</apex:outputPanel><apex:form id="sve_form1"   styleClass="sve_form1"   >
+<apex:outputPanel layout="block"   style="position:relative;width:320px;height:480px;" >
+<img   src="{!URLFOR($Resource.T_Rent_Back)}"   style="width:320px;height:482px;left:0px;top:0px;position:absolute;" /><apex:outputPanel styleclass="fieldwrapper " style="left:129px;top:154px;position:absolute;" >
+<apex:inputField id="Component6"   onchange="parentCalc_1();"   style="width:114px;height:31px;color:#000000;font-size:20pt;font-weight:Normal;"   value="{!record.Rent__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:outputLabel escape="true"   id="Component7"   rendered="{!$ObjectType.Rented_Formula__c.fields.Rent__c.accessible}"   style="left:50px;top:158px;position:absolute;color:#FFFFFF;font-size:18pt;font-weight:Bold;text-align:left;" value="{!$ObjectType.Rented_Formula__c.fields.Rent__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component7}');"/>
+<apex:outputPanel styleclass="fieldwrapper " style="left:130px;top:209px;position:absolute;" >
+<apex:inputField id="Component5"   onchange="parentCalc_1();"   style="width:48px;height:31px;color:#000000;font-size:20pt;font-weight:Normal;"   value="{!record.Percentage__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:outputLabel escape="true"   id="Component8"   rendered="{!$ObjectType.Rented_Formula__c.fields.Percentage__c.accessible}"   style="left:62px;top:218px;position:absolute;color:#FFFFFF;font-size:18pt;font-weight:Bold;text-align:left;" value="ROI" onclick="SkyEditor.touchToolTip('{!$Component.Component8}');"/>
+<apex:outputPanel >
+<apex:inputText id="Total_Value"   value="{!Total_Value}"   style="left:76px;top:266px;position:absolute;border:0;background:transparent;width:200px;color:#FFFFFF;font-size:22pt;font-weight:Bold;text-align:center;" />
+<script type="text/javascript">(function(){document.getElementById('{!$Component.Total_Value}').readOnly = true;})();</script>
+</apex:outputPanel><apex:outputLabel escape="true"   id="Component9"   rendered="{!$ObjectType.Rented_Formula__c.fields.Total_Value__c.accessible}"   style="left:110px;top:324px;position:absolute;color:#FFFFFF;font-size:22pt;font-weight:Bold;text-align:left;" value="Sale Price" onclick="SkyEditor.touchToolTip('{!$Component.Component9}');"/>
+<apex:outputPanel id="Component12_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="left:82px;top:412px;position:absolute;">
+<apex:commandButton id="Component12"   onclick="SkyEditor.navigationTo('/apex/Rntd_p3', false); return false;"   value="Percentage"   style="width:80px;color:#000000;font-weight:Bold;" >
+</apex:commandButton>
+</apex:outputPanel>
+<apex:outputPanel id="Component11_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="left:179px;top:412px;position:absolute;">
+<apex:commandButton id="Component11"   onclick="SkyEditor.navigationTo('/apex/Rntd_p2', false); return false;"   value="Rent"   style="width:66px;" >
+</apex:commandButton>
+</apex:outputPanel>
+</apex:outputPanel></apex:form><script type="text/javascript">
+function aggregateCalc_all(triggerId) {
+}
+function parentCalc_1() {
+  var baseNodeObject = null;
+  setValue(
+  getListSibling(':Total_Value', baseNodeObject),
+divideCalc(
+  multiplyCalc(
+  getListSibling(':Component6', baseNodeObject),
+  jQuery(1200)
+)
+,
+  getListSibling(':Component5', baseNodeObject)
+)
+,
+  'round',
+  1,
+  false,
+  true
+)
+
+}
+
+</script>
+</apex:outputPanel>
+</td></tr></table>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

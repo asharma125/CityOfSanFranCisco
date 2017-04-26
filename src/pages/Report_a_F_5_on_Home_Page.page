@@ -1,0 +1,43 @@
+<apex:page showHeader="false">
+
+    <style type="text/css">
+        .FlowText {
+            color: #294154;
+            text-shadow: 3px 3px 2px #ADBACD;
+            font: Bold 16px arial, sans-serif;
+        }
+        .FlowCurrency {
+            color: Black;
+        }
+        .FlowContainer {
+            line-height: 150%;
+            margin-left: 20px;
+            margin-top: 10px;
+            padding: 10px 10px;
+            width: 1000px;
+            background-color: #294154;
+            box-shadow: 6px 6px 3px 2px #858585;
+            -webkit-box-shadow: 6px 6px 3px 2px #858585;
+            -moz-box-shadow: 6px 6px 3px 2px #858585;
+        }
+    </style>
+
+    <style type="text/css">
+        .pPageBlock .labelCol {
+            text-align: Left;
+        }
+    </style>
+
+    <div id="the Flow">
+        <flow:interview name="F_5_Updation" buttonLocation="bottom" buttonStyle=" color:#294154; font: Bold 14px arial, sans-serif; border:2px Solid; padding:7px 25px; box-shadow: 
+  0 1px 2px #fff, /*bottom external highlight*/
+  0 -1px 1px #666, /*top external shadow*/ 
+  inset 0 -1px 1px rgba(0,0,0,0.5), /*bottom internal shadow*/ 
+  inset 0 1px 1px rgba(255,255,255,0.8); /*top internal highlight*/ -webkit-border-radius: 10px;
+-moz-border-radius: 10px;
+border-radius: 10px;
+  " />
+
+
+    </div>
+</apex:page>

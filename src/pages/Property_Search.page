@@ -1,0 +1,742 @@
+<apex:page standardController="Property__c"  extensions="Property_Search"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   title="SALE AVAILABILITY SEARCH"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Property__c";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<!--[if IE 9 ]> 
+<style>
+.dataTableSet {margin-bottom:auto;}
+</style><![endif]-->  <title>SALE AVAILABILITY SEARCH</title> </head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.tablesorter.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/addons/pager/jquery.tablesorter.pager.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/tableSortPageingSetting.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+jQuery(document).ready(function(){
+SkyEditor.searchConditionFromTo = getDateFieldsValue();
+SkyEditor.searchConditionItem = getSearchItemsValue();
+});
+SkyEditor.defaultConditionObj = {"Component6":"eq","Component8":"eq","Component10":"eq","Component16":"","Component18":"","Component22":"eq","Component26":"","Component28":"","Component30":"","Component54":"","Component68":"","Component70":"","Component32":"eq","Component60":"eq","Component62":"eq"};
+
+</script>
+<script>
+jQuery(document).ready(function(){if(SkyEditor.disableDetailPanel()){return;} else {SkyEditor.PageSplitter.pageSplitterInitialize({"south":{"size":256,"onopen_end":function(){ SkyEditor.PageSplitter.detailPanelSet.open("south");SkyEditor.PageSplitter.frameLoading('Component4')}}
+});SkyEditor.PageSplitter.detailPanelSet.resizeAll();}});
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<div id="splitterContainerPanel" style="height:768px;">
+<div class="ui-layout-south">
+<apex:outputPanel id="Component4" layout="block"  style="width:100%;height:100%;overflow:auto;height:100%;">
+    <apex:iframe id="Component4_frame" src="{!Component4_pagename}?id={!Component4_recordid}&showHeader=false&sve_detailPageName={!Component4_pagename}&sve_showDeleteCancel=true" width="100%" height="100%" frameborder="false" scrolling="true" rendered="{!NOT(ISNULL(Component4_pagename))}" />
+    <apex:image id="Component4_loading" styleClass="sveloading" url="/img/loading32.gif" />
+</apex:outputPanel><div id="south_mask" class="svemask"></div>
+</div><div class="ui-layout-center">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_searchTemplate.css')}"/>
+<apex:form id="sve_form1"   styleClass="sve_form1"   >
+<div id="saveDialog" style="display:none;">
+    <table style="font-size:small;">
+        <tr><td id="saveDialogConditionNameLabel">{!Label.ConditionLabelName}</td><td><input type="text" id="conditionName" size="20" /></td></tr>
+        <tr><td colspan="2" style="text-align:center;"><input type="button" id="conditionSave" value="{!Label.SaveConditionButtonSave}" /></td></tr>
+    </table>
+    <div class="messageBox" style="color:#CC0000; text-align:center; margin-top:10px;"><span class="mText"></span></div>
+</div>
+<div id="readDialog" style="display:none;">
+    <table style="font-size:small;">
+        <tr><td id="readDialogConditionNameLabel">{!Label.ConditionLabelName}</td><td><select id="searchConditionList" /></td><td><input type="button" id="deleteCondition" value="{!Label.ReadConditionButtonDelete}" /></td></tr>
+        <tr><td colspan="3"><input type="button" id="setCondition" value="{!Label.ReadConditionSetConditions}" /></td></tr>
+    </table>
+    <div class="messageBox" style="color:#CC0000; text-align:center; margin-top:10px;"><span class="mText"></span></div>
+</div>
+<script type="text/javascript">
+</script>
+<apex:outputPanel id="Component1_Wrapper" styleClass="">
+<apex:pageBlock id="Component1"   mode="detail"   title="Search"   >
+<apex:pageBlockButtons location="bottom"   >
+<apex:commandButton action="{!doSearch}"   id="Component49"   value="{!customSearchButtonLabel}"   style="width:66px;" /><apex:commandButton id="Component50"   onclick="clearSearchConditionsForPagererender();return false;"   reRender="messagesPanel"   value="{!Label.canvasClearButton}"   style="width:66px;" /><script>
+jQuery('.pbBottomButtons').css('margin-top',0);
+</script></apex:pageBlockButtons><apex:pageBlockSection collapsible="true"   columns="1"   id="Component51"   title="{!customSearchSectionTitle}"   >
+<apex:facet name="header"   >
+<apex:outputPanel >
+<apex:outputText value="{!customSearchSectionTitle}"   /><input   class="btn"   id="saveBtn"   type="button"   value="{!customRegistCriteriaButtonLabel}"  /><input   class="btn"   id="readBtn"   type="button"   value="{!customLoadCriteriaButtonLabel}"  /></apex:outputPanel></apex:facet><apex:outputPanel id="Component52"   >
+<fieldset  >
+<table   border="0"   cellpadding="0"   style="font-size:12px;">
+<tr  >
+<td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Location_City_new__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component5"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Location_City_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component5}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Location_City_new__c.createable}" >
+		<apex:selectList id="Component6_operator" value="{!Component6_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Location_City_new_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component6" value="{!Component6_val.Location_City_new__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component6}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Location_new__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component7"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Location_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component7}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Location_new__c.createable}" >
+		<apex:selectList id="Component8_operator" value="{!Component8_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Location_new_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component8" value="{!Component8_val.Location_new__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component8}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Location_Sub_new__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component9"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Location_Sub_new__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component9}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Location_Sub_new__c.createable}" >
+		<apex:selectList id="Component10_operator" value="{!Component10_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Location_Sub_new_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component10" value="{!Component10_val.Location_Sub_new__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component10}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Sale_Price__c.accessible}" >
+<apex:outputLabel escape="true"   id="Component12"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Sale_Price__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component12}');"/>
+</apex:outputPanel>
+</td>
+<td>
+	<apex:outputPanel styleClass="searchDateBox"   rendered="{!$ObjectType.Property__c.fields.Sale_Price__c.accessible}" >
+		<apex:inputField id="Component11_from" value="{!Component11_from.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+		<label style="font-weight:bold;" class="kara">{!Label.To}&nbsp;</label>
+		<apex:inputField id="Component11_to" value="{!Component11_to.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+	</apex:outputPanel>
+</td></tr><tr  >
+<td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.P_S_F_Sale_Price__c.accessible}" >
+<apex:outputLabel escape="true"   id="Component14"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.P_S_F_Sale_Price__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component14}');"/>
+</apex:outputPanel>
+</td>
+<td>
+	<apex:outputPanel styleClass="searchDateBox"   rendered="{!$ObjectType.Property__c.fields.P_S_F_Sale_Price__c.accessible}" >
+		<apex:inputField id="Component13_from" value="{!Component13_from.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+		<label style="font-weight:bold;" class="kara">{!Label.To}&nbsp;</label>
+		<apex:inputField id="Component13_to" value="{!Component13_to.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Budget_Suits__c.createable}" >
+															<apex:outputLabel escape="true"   id="Component15"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Budget_Suits__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component15}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Budget_Suits__c.createable}" >
+		<apex:selectList id="Component16_operator" value="{!Component16_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Budget_Suits_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component16" value="{!Component16_val.Budget_Suits__c}" required="false" styleClass="conditionItem"    />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component16}";
+				SkyEditor.smallMonitorInputMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Area_Suits__c.createable}" >
+															<apex:outputLabel escape="true"   id="Component17"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Area_Suits__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component17}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Area_Suits__c.createable}" >
+		<apex:selectList id="Component18_operator" value="{!Component18_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Area_Suits_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component18" value="{!Component18_val.Area_Suits__c}" required="false" styleClass="conditionItem"    />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component18}";
+				SkyEditor.smallMonitorInputMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Area_for_Sale__c.accessible}" >
+<apex:outputLabel escape="true"   id="Component20"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Area_for_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component20}');"/>
+</apex:outputPanel>
+</td>
+<td>
+	<apex:outputPanel styleClass="searchDateBox"   rendered="{!$ObjectType.Property__c.fields.Area_for_Sale__c.accessible}" >
+		<apex:inputField id="Component19_from" value="{!Component19_from.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+		<label style="font-weight:bold;" class="kara">{!Label.To}&nbsp;</label>
+		<apex:inputField id="Component19_to" value="{!Component19_to.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+	</apex:outputPanel>
+</td></tr><tr  >
+<td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Channel_Partners__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component21"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Channel_Partners__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component21}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Channel_Partners__c.createable}" >
+		<apex:selectList id="Component22_operator" value="{!Component22_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Channel_Partners_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component22" value="{!Component22_val.Channel_Partners__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component22}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.DFS_Date__c.accessible}" >
+<apex:outputLabel escape="true"   id="Component24"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.DFS_Date__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component24}');"/>
+</apex:outputPanel>
+</td>
+<td>
+	<apex:outputPanel styleClass="searchDateBox"   rendered="{!$ObjectType.Property__c.fields.DFS_Date__c.accessible}" >
+		<apex:inputField id="Component23_from" value="{!Component23_from.SkyEditor2__Date__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:center;ime-mode:disabled;" />
+		<label style="font-weight:bold;" class="kara">{!Label.To}&nbsp;</label>
+		<apex:inputField id="Component23_to" value="{!Component23_to.SkyEditor2__Date__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:center;ime-mode:disabled;" />
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Floor_Sale__c.createable}" >
+															<apex:outputLabel escape="true"   id="Component25"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Floor_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component25}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Floor_Sale__c.createable}" >
+		<apex:selectList id="Component26_operator" value="{!Component26_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Floor_Sale_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component26" value="{!Component26_val.Floor_Sale__c}" required="false" styleClass="conditionItem"    />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component26}";
+				SkyEditor.smallMonitorInputMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Prop_Type_Sale__c.createable}" >
+																				<apex:outputLabel escape="true"   id="Component27"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Prop_Type_Sale__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component27}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Prop_Type_Sale__c.createable}" >
+		<apex:selectList id="Component28_operator" value="{!Component28_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Prop_Type_Sale_c_multi}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component28" value="{!Component28_val.Prop_Type_Sale__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<apex:inputHidden value="{!Component28_val_dummy.SkyEditor2__Text__c}" id="Component28_Hidden"/>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component28}";
+				inputSearchItemMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td></tr><tr  >
+<td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Rating_of_Property__c.createable}" >
+																				<apex:outputLabel escape="true"   id="Component29"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Rating_of_Property__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component29}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Rating_of_Property__c.createable}" >
+		<apex:selectList id="Component30_operator" value="{!Component30_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Rating_of_Property_c_multi}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component30" value="{!Component30_val.Rating_of_Property__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<apex:inputHidden value="{!Component30_val_dummy.SkyEditor2__Text__c}" id="Component30_Hidden"/>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component30}";
+				inputSearchItemMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Cheque_Advance__c.createable}" >
+															<apex:outputLabel escape="true"   id="Component53"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Cheque_Advance__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component53}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Cheque_Advance__c.createable}" >
+		<apex:selectList id="Component54_operator" value="{!Component54_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Cheque_Advance_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component54" value="{!Component54_val.Cheque_Advance__c}" required="false" styleClass="conditionItem"    />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component54}";
+				SkyEditor.smallMonitorInputMultiSelect(id);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Company_Transfer__c.accessible}" >
+																	<apex:outputLabel escape="true"   id="Component67"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Company_Transfer__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component67}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Company_Transfer__c.accessible}" >
+		<apex:selectList id="Component68_operator" value="{!Component68_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Company_Transfer_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component68" value="{!Component68_val.SkyEditor2__Checkbox__c}" required="false" styleClass="conditionItem"   style="color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component68}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Land_Status__c.accessible}" >
+															<apex:outputLabel escape="true"   id="Component69"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Land_Status__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component69}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Land_Status__c.accessible}" >
+		<apex:selectList id="Component70_operator" value="{!Component70_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Land_Status_c}" />
+		</apex:selectList>
+		<apex:selectList id="Component70" value="{!Component70_val.SkyEditor2__Text__c}" size="1" styleClass="conditionItem"  >
+			<apex:selectOptions value="{!valueOptions_Property_c_Land_Status_c}"/>
+		</apex:selectList>
+		<apex:inputHidden value="{!Component70_val_dummy.SkyEditor2__Text__c}" id="Component70_Hidden"/>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component70}";
+				inputSearchItemMultiSelect(id,true);
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td></tr><tr  >
+<td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Rented__c.accessible}" >
+																	<apex:outputLabel escape="true"   id="Component31"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Rented__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component31}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Rented__c.accessible}" >
+		<apex:selectList id="Component32_operator" value="{!Component32_op.value}" size="1" styleClass="operatorSelect ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Rented_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component32" value="{!Component32_val.SkyEditor2__Checkbox__c}" required="false" styleClass="conditionItem"   style="color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component32}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.ROI__c.accessible}" >
+<apex:outputLabel escape="true"   id="Component58"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.ROI__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component58}');"/>
+</apex:outputPanel>
+</td>
+<td>
+	<apex:outputPanel styleClass="searchDateBox"   rendered="{!$ObjectType.Property__c.fields.ROI__c.accessible}" >
+		<apex:inputField id="Component57_from" value="{!Component57_from.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+		<label style="font-weight:bold;" class="kara">{!Label.To}&nbsp;</label>
+		<apex:inputField id="Component57_to" value="{!Component57_to.SkyEditor2__Text__c}" required="false" styleClass="searchDateFieldItems"  style="width:6em;text-align:right;ime-mode:disabled;" />
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Tenant_Type__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component59"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Tenant_Type__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component59}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Tenant_Type__c.createable}" >
+		<apex:selectList id="Component60_operator" value="{!Component60_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Tenant_Type_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component60" value="{!Component60_val.Tenant_Type__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component60}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td><td class="searchItemLabelCol">
+<apex:outputPanel rendered="{!$ObjectType.Property__c.fields.Tenant_Type_Sub__c.createable}" >
+																			<apex:outputLabel escape="true"   id="Component61"   style="color:#000000;font-size:1.0em;font-weight:Bold;margin-left:20px;margin-right:4px;" value="{!$ObjectType.Property__c.fields.Tenant_Type_Sub__c.label}" onclick="SkyEditor.touchToolTip('{!$Component.Component61}');"/>
+	</apex:outputPanel>
+</td>
+<td class="searchItemDataCol">
+	<apex:outputPanel styleClass="searchItemBox"   rendered="{!$ObjectType.Property__c.fields.Tenant_Type_Sub__c.createable}" >
+		<apex:selectList id="Component62_operator" value="{!Component62_op.value}" size="1" styleClass="operatorSelect operatorDisplayNone ">
+			<apex:selectOptions value="{!operatorOptions_Property_c_Tenant_Type_Sub_c}" />
+		</apex:selectList>
+		<apex:outputPanel >
+			<apex:inputField id="Component62" value="{!Component62_val.Tenant_Type_Sub__c}" required="false" styleClass="conditionItem"   style="width:107px;color:#000000;font-size:1.0em;"  />
+		</apex:outputPanel>
+		<script type="text/javascript">
+			jQuery(function(){
+				var id = "{!$Component.Component62}";
+				jQuery(document.getElementById(id)).change(function(event) {
+					changeOperator(this.id);
+				});
+			});
+		</script>
+	</apex:outputPanel>
+</td></tr></table></fieldset></apex:outputPanel></apex:pageBlockSection>
+</apex:pageBlock>
+</apex:outputPanel></apex:form><apex:form id="sve_form2"   styleClass="sve_form2"   >
+<apex:outputPanel id="Component2_Wrapper" styleClass="">
+<apex:pageBlock id="Component2"   mode="maindetail"   title=" YOUR SEARCH RESULTS"   >
+<apex:pageBlockButtons location="top"   >
+</apex:pageBlockButtons><apex:outputPanel id="Component3_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="">
+<apex:outputPanel id="Component3"   layout="block"   styleClass="dataTableSet"   style="overflow:auto;width:100%;">
+	<apex:actionRegion >
+<script>SkyEditor.selectedRecords = {};</script>
+<table   class="tableOperator"   id="Component3_header"  >
+<tr  >
+<td  >
+<div   id="Component3__pager"   layout="block"  class="pager" style="margin-left:20px; text-align:center;">
+ <table cellpadding="0" cellspacing="0" border="0">
+ <tr>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/first.png')}" class="first"/>
+ </td>
+ <td> 
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/prev.png')}" class="prev"/>
+ </td>
+ <td>
+ <input type="text" class="pagedisplay" readonly="readonly" />
+ </td>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/next.png')}" class="next"/>
+ </td>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/last.png')}" class="last"/>
+ </td>
+ <td>
+ <select class="pagesize">
+  <option value="5">5</option>
+  <option value="10">10</option>
+  <option value="25">25</option>
+  <option value="50">50</option>
+  <option value="100">100</option>
+ </select>
+ </td>
+ </tr>
+ </table>
+<script>
+	if (typeof LookupHoverDetail === 'function') {
+		LookupHoverDetail.prototype.show = function () {};
+	}
+</script>
+</div></td><td  >
+<input type="text" class="filterValue" placeholder="{!label.TableFilterPlaceholder}" /></td><td  >
+<apex:outputPanel style="margin-left:20px;"   >
+<apex:outputText value="{!rowCount}"   /><apex:outputText styleClass="recordCounter"   value="{!IF(Component3.items.size >=500, (rowCountPrefix & ' ' & TEXT(Component3.items.size) & ' ' & rowCountSuffix), (':' & TEXT(Component3.items.size)))}"   /></apex:outputPanel></td><td  >
+<apex:outputPanel >
+<apex:variable var="tableMessage1" value=""/>
+<apex:variable var="tableMessage2" value=""/>
+<apex:variable var="tableMessage3" value="REFINE YOUR SEARCH IN THE CLIENT SIDE FILTER"/>
+<apex:outputText id="Component3_msg" style="{!'color:#666699;font-weight:bold;font-size:1.0em;'}" value="{!tableMessage3}"/></apex:outputPanel></td></tr></table><apex:outputPanel layout="block"   styleClass="tableWrapper"    >
+<apex:dataTable columnsWidth="1px,,,,,,,,,"   id="Component3_table"   onRowMouseOut="skyeditorRowOut(this)"   onRowMouseOver="skyeditorRowOver(this)"   rows="500"   styleClass="pageblockTableStyle"   value="{!Component3.items}"   var="Component3_item"  >
+<apex:column style="width:1px;" >
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:0px;display:block;" >
+</apex:outputPanel></apex:facet><apex:commandButton action="{!null}"   oncomplete="SkyEditor.PageSplitter.detailPanelOpen('south','Component4');"   reRender="Component4"   styleClass="SVE_DetailPanelBtn"   value="{!Label.showDetailPage}"     rendered="{!AND($ObjectType.Property__c.accessible,NOT(ISNULL(Component3_item.record.id)))}"  >
+<apex:param assignTo="{!Component4_pagename}"   name="pageName"   value="{!$Page.rented_vivek_layout}"    /><apex:param assignTo="{!Component4_recordid}"   name="rid"   value="{!Component3_item.record.id}"    /></apex:commandButton></apex:column><apex:column id="Component34"   style="width:175px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.Name.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;text-decoration:underline;"  onclick="jQuery(this).find('a').attr('target','_blank')	">
+			<apex:outputLink value="/{!Component3_item.record.id}"
+		 target="_blank" 		onclick="return SkyEditor.navigateToSobjectByNameLink('{!Component3_item.record.id}',true);" >
+							<apex:outputField id="Component33"     value="{!Component3_item.record.Name}" />
+			</apex:outputLink>
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:175px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.Name.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component36"   style="width:176px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.Address__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#666699;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component35"     value="{!Component3_item.record.Address__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:176px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.Address__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component72"   style="width:113px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.Rented_Synopsis__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component71"     value="{!Component3_item.record.Rented_Synopsis__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:113px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.Rented_Synopsis__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component74"   style="width:113px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.Monthly_Rent__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component73"     value="{!Component3_item.record.Monthly_Rent__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:113px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.Monthly_Rent__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component42"   style="width:176px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.Sale_Price__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component41"     value="{!Component3_item.record.Sale_Price__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:176px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.Sale_Price__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component46"   style="width:176px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.ROI__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component45"     value="{!Component3_item.record.ROI__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:176px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.ROI__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component44"   style="width:176px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.May_Settle_Sale_Price__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component43"     value="{!Component3_item.record.May_Settle_Sale_Price__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:176px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.May_Settle_Sale_Price__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component76"   style="width:113px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Property__c.fields.DFS_Date__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component75"     value="{!Component3_item.record.DFS_Date__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:113px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Property__c.fields.DFS_Date__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component64"   style="width:113px;color:#000000;text-align:left;vertical-align:middle;" >
+<apex:outputPanel id="Component63_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="">
+<apex:commandButton id="Component63"   onclick="SkyEditor.navigationTo('/apex/Property_For_Sale_Print_Layout?id={!Component3_item.record.Id}', true); return false;"   title="Generate PDF of this Property"   value="PDF"   style="width:66px;" >
+</apex:commandButton>
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:113px;text-align:left;display:block;" >
+<apex:outputText value="PDF"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column></apex:dataTable>
+
+<script type="text/javascript">
+(function () {
+if(jQuery("table[id$='Component3_table'] tbody tr").length > 0){
+	var table, sortOptions, toolbox, filterOptions, pager, pagerOptions;
+	table = document.getElementById("Component3_table") || document.getElementById("{!$Component.Component3_table}");
+	sortOptions = {headers: { 0:{sorter: false}, 1:{sorter: "text"}, 2:{sorter: "text"}, 3:{sorter: "text"}, 4:{sorter: "currency"}, 5:{sorter: "currency"}, 6:{sorter: "digit"}, 7:{sorter: "currency"}, 8:{sorter: "Date"}, 9:{sorter: false}}};
+	filterOptions = {inlineFilter: {}};
+	pager = document.getElementById("Component3__pager");
+	pagerOptions = {
+		container: jQuery(pager),
+		size: 5
+	};
+	SkyEditor.TableSorter.initialize(table, {
+		rowsPerRecord: 1,
+		sort: sortOptions,
+		filter: filterOptions,
+		pager: pagerOptions
+	});
+}
+})();
+</script>
+</apex:outputPanel><script>
+ObscureUnusedCondition();
+</script><apex:inputTextArea id="Component3_hiddenValue" value="{!Component3.hiddenValue}" style="display:none;" rendered="{!$ObjectType.Property__c.createable}"></apex:inputTextArea>
+<apex:commandButton id="Component3_importByJSON" action="{!Component3.importByJSON}" style="display:none;" reRender="Component3" rendered="{!$ObjectType.Property__c.createable}" />
+<script type="text/javascript">
+jQuery(document).ready(function () {
+  if (typeof aggregateCalc_all === 'function') {
+    aggregateCalc_all('Component3');
+  }
+});
+
+if(SkyEditor.disableDetailPanel()){
+	jQuery('[id$=Component3]').find('.SVE_DetailPanelBtn').remove();
+}
+</script>
+	</apex:actionRegion>
+</apex:outputPanel>
+</apex:outputPanel>
+</apex:pageBlock>
+</apex:outputPanel></apex:form></apex:outputPanel>
+</td></tr></table>
+</div>
+</div>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

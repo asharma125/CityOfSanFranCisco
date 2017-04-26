@@ -1,0 +1,88 @@
+<apex:component controller="SignatureComponentController" allowDML="true" >
+	<apex:attribute name="parentId" type="id" description="The Id of the record for Signature" required="true" assignTo="{!objParentId}"/>
+
+	<script>
+	   
+	  
+		var mousePressed = false;
+		var lastX, lastY;
+		var canvas;
+		var ctx;
+		var canSave = false;
+		var parentId = '{!objParentId}';
+		 
+		$(document).ready(function() {
+			canvas = document.getElementById('myCanvas');
+			ctx = canvas.getContext("2d");
+
+			$('#myCanvas').mousedown(function (e) {
+				mousePressed = true;
+				Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, false);
+			});
+
+			$('#myCanvas').mousemove(function (e) {
+				if (mousePressed) {
+					var canSave = true;
+					Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, true);
+				}
+			});
+
+			$('#myCanvas').mouseup(function (e) {
+				mousePressed = false;
+			});
+			$('#myCanvas').mouseleave(function (e) {
+				mousePressed = false;
+			});
+			$('#myCanvas').touchstart(function (e) {
+				mousePressed = true;
+				Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, false);
+			});
+			$('#myCanvas').touchmove(function (e) {
+				if (mousePressed) {
+					var canSave = true;
+					Draw(e.pageX - $(this).offset().left, e.pageY - $(this).offset().top, true);
+				}
+			});
+			$('#myCanvas').touchend(function (e) {
+				mousePressed = false;
+			});
+		})
+	 
+		function Draw(x, y, isDown) {
+			if (isDown) {
+				ctx.beginPath();
+				ctx.strokeStyle = $('#selColor').val();
+				ctx.lineWidth = $('#selWidth').val();
+				ctx.lineJoin = "round";
+				ctx.moveTo(lastX, lastY);
+				ctx.lineTo(x, y);
+				ctx.closePath();
+				ctx.stroke();
+			}
+			lastX = x; lastY = y;
+		}
+	 
+		function clearArea() {
+			// Use the identity matrix while clearing the canvas
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+		}
+	 
+		function saveSignature(){
+			var strDataURI = canvas.toDataURL();
+			console.log(strDataURI);
+			strDataURI = strDataURI.replace(/^data:image\/(png|jpg);base64,/, "");
+			console.log(strDataURI);
+			SignatureComponentController.saveSignature(strDataURI,parentId,processResult);
+		}
+	 
+		function processResult(result){
+			if(result){
+				top.location.href='/'+parentId;
+			}else{
+				alert('An error occurred while saving the signature. Please try again.');
+			}
+			console.log(result);
+		}
+	</script>
+</apex:component>

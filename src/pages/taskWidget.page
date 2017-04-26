@@ -1,0 +1,1288 @@
+<apex:page id="pge" controller="taskWidgetController" sidebar="true" docType="html-5.0">
+   
+    <script src="/soap/ajax/24.0/connection.js" type="text/javascript"></script>
+    <apex:includeScript value="{!URLFOR($Resource.jQueryDataTable, '/js/jquery-1.9.1.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jQueryDataTable, '/js/advancedtable_v2.js')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.taskWidgetDesign, '/css/style.css')}"/>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css"/>
+    <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    
+    <script type="text/javascript">
+        var j = jQuery.noConflict(); 
+        var query = "SELECT Id, Subject, Status, Description, ActivityDate, X5_Tasks_before_12__c, Owner.Name, Type, WhoId, Who.Name, Sub_Task_Sub__c, Task_Result__c, WhatId, What.Name, Priority, Non_Turbo_Job__c,Date_Completed__c,Hide_for_1_hour__c, Hide_for_2_hour__c, Notes__c FROM Task ";
+        
+        var whereClause;
+        var isClosed = " AND IsClosed = false ";
+        var includeOverdue = " AND ActivityDate <= TODAY ";
+        var includeNonTurbo = " AND Non_Turbo_Job__c = false ";
+        var requirementTask = "";
+        var selectedIds = "";
+        var mytaskFilter = '';
+        var orderbyfield = ' ORDER BY Activitydate ';
+        var orderin = 'desc NULLS LAST';
+        var orderby = orderbyfield+orderin;
+        
+        //Creates tables on page load.
+        j( document ).ready(function() 
+        {
+            createTableToCall();
+            createTableToDo();
+            //createTableHistory();
+           
+        });
+        
+        //Returns list of To Call Tasks
+        function returnTasksToCall()
+        {
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            console.log('{!NOW}');
+            whereClause = " WHERE ( Hide_for_1_hour__c = false AND Hide_for_2_hour__c = false ) AND OwnerId = \'{!$USER.Id}\' AND Task_Type__c = \'Call\' " + isClosed + includeOverdue + includeNonTurbo + requirementTask + mytaskFilter + orderby;
+            var queryTemp = query + whereClause;
+            var result = sforce.connection.query(queryTemp); 
+            var records = result.getArray("records");
+            return records;
+        }
+        
+        //Returns list of To Do Tasks
+        function returnTasksToDo()
+        {
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            whereClause = " WHERE ( Hide_for_1_hour__c = false AND Hide_for_2_hour__c = false ) AND OwnerId = \'{!$USER.Id}\' AND Task_Type__c != \'Call\' " + isClosed + includeOverdue + includeNonTurbo + requirementTask + mytaskFilter + orderby;
+            var queryTemp = query + whereClause;
+            var result = sforce.connection.query(queryTemp); 
+            var records = result.getArray("records");
+            return records;
+        }
+        function orderbysubTasksub(){
+            orderbyfield = ' ORDER BY Sub_Task_Sub__c ';
+            if( orderin == 'asc NULLS LAST'){
+                orderin = 'desc NULLS LAST';
+            }else{
+                orderin = 'asc NULLS LAST';
+            }
+            console.log( 'orderin='+orderin )
+            orderby = orderbyfield+orderin;
+            createTableToCall();
+            createTableToDo();
+        }
+        j( document ).ready(function() {
+            j( "input[id^='due']" ).datepicker();
+        });
+        
+        //Returns list of To Do Tasks
+        function returnTasksHistory()
+        {
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            whereClause = " WHERE ( Hide_for_1_hour__c = true OR Hide_for_2_hour__c = true OR IsClosed = true ) AND OwnerId = \'{!$USER.Id}\' AND Date_Completed__c != Null ORDER BY Date_Completed__c desc LIMIT 50" ;
+            var queryTemp = query + whereClause;
+            var result = sforce.connection.query(queryTemp); 
+            var records = result.getArray("records");
+            return records;
+        }        
+        
+        function createTableToCall(){
+            var taskRecords = returnTasksToCall();
+            if(taskRecords.length > 0){
+                var tBody = createTableBody(taskRecords, 'ToCall');
+                jQuery("#table1").show();
+                jQuery("#table1 tbody").html('');
+                jQuery("#table1").append(tBody);
+                jQuery("#tocallMsg").hide();
+                jQuery("#tocall").show();
+                reCreateTableToCall();
+                j( "input[id^='due']" ).datepicker();
+            }else{
+                jQuery("#table1").hide();
+                jQuery("#tocallMsg").show();
+                jQuery("#tocall").hide();
+            }
+        }
+        
+        function createTableToDo()
+        {
+            var taskRecords = returnTasksToDo();
+            if(taskRecords.length > 0)
+            {
+                var tBody = createTableBody(taskRecords, 'ToDo');
+                jQuery("#table2").show();
+                jQuery("#table2 tbody").html('');
+                jQuery("#table2").append(tBody);
+                jQuery("#todoMsg").hide();
+                jQuery("#todo").show();
+                reCreateTableToDo();
+                j( "input[id^='due']" ).datepicker();
+            }
+            else
+            {
+                jQuery("#table2").hide();
+                jQuery("#todoMsg").show();
+                jQuery("#todo").hide();
+            }
+        }
+        
+        //Generates table body for task history table
+        function taskHistoryTableBody(sortedTaskRecords)
+        {
+            var tBody = '<tbody>';
+            for(var key in sortedTaskRecords)
+            {
+                if(sortedTaskRecords.hasOwnProperty(key))
+                {
+                    
+                    var whoId = sortedTaskRecords[key].WhoId;
+                    var whoName = '';
+                    var whoNameLink = '';
+                    if(whoId == '' || whoId == null)
+                    {
+                        whoName = 'Unknown';
+                        whoNameLink = whoName;
+                    }
+                    else
+                    {
+                        whoName = sortedTaskRecords[key].Who.Name;
+                        whoNameLink = '<a href="/'+whoId+'" target="_blank">'+whoName+'</a>';
+                    }
+                    tBody += '<tr>';
+                    tBody += '<td>'+whoNameLink+'</td>';
+                    tBody += '<td><a href="/'+sortedTaskRecords[key].Id+'/e" target="_blank">'+sortedTaskRecords[key].Subject+'</td>';
+                    tBody += '<td>'+sortedTaskRecords[key].ActivityDate+'</td>';
+                    tBody += '<td>'+sortedTaskRecords[key].Date_Completed__c+'</td>';
+                    tBody += '<td>';
+                    if( sortedTaskRecords[key].Hide_for_1_hour__c == 'true' || sortedTaskRecords[key].Hide_for_2_hour__c == 'true' ){
+                        tBody += 'Yes';
+                    }else{
+                        tBody += 'No';
+                    }
+                    tBody += '</td>';
+                    tBody += '</tr>';
+                }
+            }
+            tBody += ' </tbody>';
+            return tBody;
+        }
+        
+        function createTableHistory()
+        {
+            var taskRecords = returnTasksHistory();
+            if(taskRecords.length > 0)
+            {
+                var tBody = taskHistoryTableBody(taskRecords);
+                jQuery("#table3").show();
+                jQuery("#table3 tbody").html('');
+                jQuery("#table3").append(tBody);
+                jQuery("#historyMsg").hide();
+                jQuery("#history").show();
+                //reCreateTableHistory();
+            }
+            else
+            {
+                jQuery("#table3").hide();
+                jQuery("#historyMsg").show();
+                jQuery("#history").hide();
+            }
+        }
+        
+        function reCreateTableToCall()
+        {
+            j("#table1").advancedtable({ 
+                loadElement: "#loader", 
+                sorting: false, 
+                rowsPerPage: 10, 
+                searchCaseSensitive: false, 
+                ascImage: "{!URLFOR($Resource.jQueryDataTable, '/images/up.png')}", 
+                descImage: "{!URLFOR($Resource.jQueryDataTable, '/images/down.png')}"
+            });
+        }
+        
+        function reCreateTableToDo()
+        {
+            j("#table2").advancedtable({ 
+                loadElement: "#loader", 
+                sorting: false, 
+                rowsPerPage: 10,  
+                searchCaseSensitive: false, 
+                ascImage: "{!URLFOR($Resource.jQueryDataTable, '/images/up.png')}", 
+                descImage: "{!URLFOR($Resource.jQueryDataTable, '/images/down.png')}"
+            });
+        }
+        
+        function reCreateTableHistory()
+        {
+            j("#table3").advancedtable({ 
+                loadElement: "#loader", 
+                sorting: false, 
+                rowsPerPage: 5, 
+                searchCaseSensitive: false, 
+                ascImage: "{!URLFOR($Resource.jQueryDataTable, '/images/up.png')}", 
+                descImage: "{!URLFOR($Resource.jQueryDataTable, '/images/down.png')}"
+            });
+        }
+        
+        //This function creates the table body, it accepts an array of Task records.
+        function createTableBody(taskRecords, table)
+        {
+            var tBody = '<tbody>';
+            var sortedTaskRecords = new Array();
+            var topTaskRecords = new Array();
+            var highTaskRecords = new Array();
+            var normalTaskRecords = new Array();
+            var lowTaskRecords = new Array();
+            for(var key in taskRecords)
+            {
+                if(taskRecords.hasOwnProperty(key))
+                {
+                    var prior = taskRecords[key].Priority;
+                    if(prior == 'Top')
+                    {
+                        topTaskRecords.push(taskRecords[key]);
+                    }
+                    else if(prior == 'High')
+                    {
+                        highTaskRecords.push(taskRecords[key]);
+                    }
+                    else if(prior == 'Normal')
+                    {
+                        normalTaskRecords.push(taskRecords[key]);
+                    }
+                    else if(prior == 'Low')
+                    {
+                        lowTaskRecords.push(taskRecords[key]);
+                    }
+                }
+            }
+            
+            sortedTaskRecords.push.apply(sortedTaskRecords, topTaskRecords);
+            sortedTaskRecords.push.apply(sortedTaskRecords, highTaskRecords);
+            sortedTaskRecords.push.apply(sortedTaskRecords, normalTaskRecords);
+            sortedTaskRecords.push.apply(sortedTaskRecords, lowTaskRecords);
+            
+            for(var key in sortedTaskRecords)
+            {
+                if(sortedTaskRecords.hasOwnProperty(key))
+                {
+                    var whatId = sortedTaskRecords[key].WhatId;
+                    var whatName = '';
+                    if( whatId != '' && whatId != undefined && whatId != null ){
+                        whatName = sortedTaskRecords[key].What.Name;
+                    }
+                    
+                    console.log( whatId+' '+whatName);   
+                    var whoDetails;
+                    var whoId = sortedTaskRecords[key].WhoId;
+                    var whoName = '';
+                    var whoNameLink = '';
+                    if(whoId == '' || whoId == null)
+                    { 
+                        whoName = 'Unknown';
+                        whoNameLink = whoName;
+                    }
+                    else
+                    {
+                        whoName = sortedTaskRecords[key].Who.Name;
+                        whoNameLink = '<a href="/'+whoId+'" target="_blank">'+whoName+'</a>';
+                        whoDetails = fetchWhoDetails(whoId);
+                    }
+                    var history = sortedTaskRecords[key].Description;
+                    if( history != null && history != undefined){
+                        history = history.replace( /([\'])/g, '\'' );
+                        history = history.replace( /([\n])/g, '<br/>' ); 
+                    }else{
+                        history = '';
+                    }
+                    
+                    
+                    tBody += '<tr>';
+                    tBody += '<td ><input type="checkbox" name="'+table+'" value="'+sortedTaskRecords[key].Id+'" onclick="selectDeselectTask(this)" />';
+                    tBody += '<img style="vertical-align:middle;background-color: #41a748;cursor: pointer;padding: 2px; border-radius:10px;" src="{!URLFOR($Resource.taskWidgetDesign, '/image/addTasks.png')}" onclick="addNewFollowUpTask(\''+whoId+'\',\''+whoName+'\',\''+whatId+'\',\''+whatName+'\',\''+history+'\');"/> </td>';
+                    tBody += '<td>'+whoNameLink+'</td>';
+                    //tBody += '<td><a href="/'+sortedTaskRecords[key].Id+'/e" target="_blank">'+sortedTaskRecords[key].Subject+'</td>';
+                    tBody += '<td><a href="#" onclick="editTask( \''+sortedTaskRecords[key].Id+'\' )">'+sortedTaskRecords[key].Subject+'</td>';
+                    if( whatId != null && whatId != undefined)
+                    {
+                        tBody += '<td><a href="/'+whatId+'" target="_blank">'+whatName+'</td>';
+                    }
+                    else
+                    {
+                        tBody += '<td>-</td>';
+                    }
+                    tBody += '<td><input type="text" style="width:95px;" id="due'+sortedTaskRecords[key].Id+'" value="'+sortedTaskRecords[key].ActivityDate+'" onchange="saveTask(this.value, this.id, \''+table+'\');"/><input type="text" id="dueDummy" style="height:0px; border:none;width:95px;"/></td>';
+                    
+                    tBody += '<td><select id="pri'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.value, this.id, \''+table+'\' )">';
+                    tBody += '<option>-Select-</option>';
+                    if(sortedTaskRecords[key].Priority != null)
+                    {
+                        tBody += '<option value="'+sortedTaskRecords[key].Priority+'" selected>'+sortedTaskRecords[key].Priority+'</option>';
+                    }
+                    if( sortedTaskRecords[key].Priority != 'Top')
+                        tBody += '<option value="Top">Top</option>';
+                    if( sortedTaskRecords[key].Priority != 'High')
+                        tBody += '<option value="High">High</option>';
+                    if( sortedTaskRecords[key].Priority != 'Normal')
+                        tBody += '<option value="Normal">Normal</option>';
+                    if( sortedTaskRecords[key].Priority != 'Low')
+                        tBody += '<option value="Low">Low</option>';
+                     
+                    tBody += '</select></td>';
+                    
+                    tBody += '<td><select style="width:100px;" id="sts'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.value, this.id, \''+table+'\' )">';
+                    tBody += '<option>-Select-</option>';
+                    if(sortedTaskRecords[key].Sub_Task_Sub__c != null)
+                    {
+                        tBody += '<option value="'+sortedTaskRecords[key].Sub_Task_Sub__c+'" selected>'+sortedTaskRecords[key].Sub_Task_Sub__c+'</option>';
+                    }
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Property Update')
+                        tBody += '<option value="Property Update">Property Update</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Brand Initial')
+                        tBody += '<option value="Brand Initial">Brand Initial</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Brand Follow Up')
+                        tBody += '<option value="Brand Follow Up">Brand Follow Up</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'F-5 New Brand')
+                        tBody += '<option value="F-5 New Brand">F-5 New Brand</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'F-5 Closed')
+                        tBody += '<option value="F-5 Closed">F-5 Closed</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Escalation & Tenure End')
+                        tBody += '<option value="Escalation & Tenure End">Escalation & Tenure End</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'F-4 Urgent')
+                        tBody += '<option value="F-4 Urgent">F-4 Urgent</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'F-4 Normal')
+                        tBody += '<option value="F-4 Normal">F-4 Normal</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Courier')
+                        tBody += '<option value="Courier">Courier</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'CSS')
+                        tBody += '<option value="CSS">CSS</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Find Availability')
+                        tBody += '<option value="Find Availability">Find Availability</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'PIC/Naksha/DMD')
+                        tBody += '<option value="PIC/Naksha/DMD">PIC/Naksha/DMD</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Agreement & Negotiation')
+                        tBody += '<option value="Agreement & Negotiation">Agreement & Negotiation</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Accounts')
+                        tBody += '<option value="Accounts">Accounts</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Miscellaneous')
+                        tBody += '<option value="Miscellaneous">Miscellaneous</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Software')
+                        tBody += '<option value="Software">Software</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Newspaper & Dealer Prop.')
+                        tBody += '<option value="Newspaper & Dealer Prop.">Newspaper & Dealer Prop.</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'SMS')
+                        tBody += '<option value="SMS">SMS</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'MCR/Prop.Development')
+                        tBody += '<option value="MCR/Prop.Development">MCR/Prop.Development</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Dealer Disclosed')
+                        tBody += '<option value="Dealer Disclosed">Dealer Disclosed</option>'; 
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Dealer Procured')
+                        tBody += '<option value="Dealer Procured">Dealer Procured</option>';
+                    if( sortedTaskRecords[key].Sub_Task_Sub__c != 'Client Disclosed')
+                        tBody += '<option value="Client Disclosed">Client Disclosed</option>'; 
+                    tBody += '</select></td>';
+                    
+                    tBody += '<td><select style="width:70px;" id="myT'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.value, this.id, \''+table+'\' )">';
+                    tBody += '<option>-Select-</option>';
+                    if(sortedTaskRecords[key].X5_Tasks_before_12__c != null)
+                    {
+                        tBody += '<option value="'+sortedTaskRecords[key].X5_Tasks_before_12__c+'" selected>'+sortedTaskRecords[key].X5_Tasks_before_12__c+'</option>';
+                    }
+                    if( sortedTaskRecords[key].X5_Tasks_before_12__c != 'morning')
+                        tBody += '<option value="morning">morning</option>';
+                    if( sortedTaskRecords[key].X5_Tasks_before_12__c != '5 Tasks B/F 12')
+                        tBody += '<option value="5 Tasks B/F 12">5 Tasks B/F 12</option>';
+                    if( sortedTaskRecords[key].X5_Tasks_before_12__c != 'Next 5')
+                        tBody += '<option value="Next 5">Next 5</option>';
+                    if( sortedTaskRecords[key].X5_Tasks_before_12__c != 'Last 5')
+                        tBody += '<option value="Last 5">Last 5</option>';
+                    if( sortedTaskRecords[key].X5_Tasks_before_12__c != 'Others')
+                        tBody += '<option value="Others">Others</option>';
+                        
+                    tBody += '</select></td>';
+                    
+                    tBody += '<td><select style="width:70px;" id="trs'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.value, this.id, \''+table+'\' )">';
+                    tBody += '<option>-Select-</option>';
+                    if(sortedTaskRecords[key].Task_Result__c != null)
+                    {
+                        tBody += '<option value="'+sortedTaskRecords[key].Task_Result__c+'" selected>'+sortedTaskRecords[key].Task_Result__c+'</option>';
+                    }
+                    if( sortedTaskRecords[key].Task_Result__c != 'On Job')
+                        tBody += '<option value="On Job">On Job</option>';
+                    if( sortedTaskRecords[key].Task_Result__c != 'Success')
+                        tBody += '<option value="Success">Success</option>';
+                    if( sortedTaskRecords[key].Task_Result__c != 'Failed')
+                        tBody += '<option value="Failed">Failed</option>';
+                    if( sortedTaskRecords[key].Task_Result__c != 'Deferred')
+                        tBody += '<option value="Deferred">Deferred</option>';
+                        
+                    tBody += '</select></td>';
+                    
+                    tBody += '<td style="text-align:center;"><input type="checkbox" id="com'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.checked, this.id, \''+table+'\' )" /></td>';
+                    tBody += '<td style="text-align:center;"><input type="checkbox" id="ntb'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.checked,this.id, \''+table+'\')" ';
+                    if(sortedTaskRecords[key].Non_Turbo_Job__c == 'true')
+                    {
+                        tBody += ' checked /></td>'; 
+                    }
+                    else
+                    {
+                        tBody += ' /></td>';
+                    }
+                    tBody += '<td style="text-align:center;"><input type="checkbox" id="d1h'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.checked,this.id, \''+table+'\')"/></td>';
+                    tBody += '<td style="text-align:center;"><input type="checkbox" id="d2h'+sortedTaskRecords[key].Id+'" onchange="saveTask(this.checked,this.id, \''+table+'\')"/></td>';  
+                    console.log('whoDetails='+whoDetails);
+                    if(whoDetails != null && whoDetails != undefined && whoDetails[0] != null && whoDetails[0] != undefined)
+                    {
+                        console.log('whoDetails[0]='+whoDetails[0]);
+                        var whoEmail = whoDetails[0].Email;
+                        var whoPhone = whoDetails[0].Phone;
+                        var whoMobile = whoDetails[0].MobilePhone;
+                        if(whoEmail != null || whoPhone != null || whoMobile != null)
+                        {
+                            tBody += '<td><a href="#" onclick="showCallPopUp(\''+sortedTaskRecords[key].Id+'\',\''+whoName+'\',\''+whoEmail+'\',\''+whoPhone+'\',\''+whoMobile+'\');"><img src="{!URLFOR($Resource.taskWidgetDesign, '/image/call.png')}" style="height:32px;"/></a></td>';
+                        }
+                        else if((whoEmail == null || whoEmail == '') && (whoPhone == null || whoPhone == '') && (whoMobile == null || whoMobile == ''))
+                        {
+                            tBody += '<td><img src="{!URLFOR($Resource.taskWidgetDesign, '/image/call-disable.png')}" style="height:32px;"/></td>';
+                        }
+                    }
+                    else
+                    {
+                        tBody += '<td><img src="{!URLFOR($Resource.taskWidgetDesign, '/image/call-disable.png')}" style="height:32px;"/></td>';
+                    }
+                    tBody += '</tr>';
+                }
+            }
+            tBody += ' </tbody>';
+            return tBody;
+        }
+        
+        //This function queries Contact/Lead details on the basis of WhoId on task record.
+        function fetchWhoDetails(whoId)
+        {
+            var query;
+            if(whoId.substring(0,3) == '003')
+            {
+                query = 'SELECT Email,Phone,MobilePhone FROM Contact WHERE Id=\''+whoId+'\'';
+            }
+            else if(whoId.substring(0,3) == '00Q')
+            {
+                query = 'SELECT Email,Phone,MobilePhone FROM Lead WHERE Id=\''+whoId+'\'';
+            }
+            if(query != null && query != '')
+            {
+                var result = sforce.connection.query(query); 
+                var records = result.getArray("records");
+                console.log('records='+records);
+                return records;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        
+        //This function shows the call pop up when call button is clicked.
+        function showCallPopUp(taskid,name,em,ph,mob)
+        {
+            var tBody = '<table style="width:100%;font-size:18px;">';
+            tBody += '<tr height="30px;"><td align="center" style="font-weight:bold;background-color:#1797c0;padding:10px;">'+name+'</td></tr>';
+            tBody += '<tr height="30px;"><td align="center" style="font-weight:bold;color:red;padding:10px;"><div id="twiliomsg" style="display:none;color:red" ></div></td></tr>';
+            if(em != null && em != 'null')
+            {
+                tBody += '<tr height="30px;"><td style="padding:10px;"><b>Email:</b>&nbsp;<a style="font-size:20px;" href="mailto:'+em+'" target="_blank">'+em+'</a></td></tr>';
+            }
+            if(ph != null && ph != 'null')
+            {
+                tBody += '<tr height="30px;"><td style="padding:10px;"><b>Phone:</b>&nbsp;<input type="text" id="ph'+taskid+'" value="'+ph+'"/>&nbsp;&nbsp;<a href="#" style="font-size:20px;" onclick="twilioCall(\''+taskid+'\',\'ph\');">Call</a></td></tr>';
+            }
+            if(mob != null && mob != 'null')
+            {
+                tBody += '<tr height="30px;"><td style="padding:10px;"><b>Mobile:</b>&nbsp;<input type="text" id="mob'+taskid+'" value="'+mob+'"/>&nbsp;&nbsp; <a href="#" style="font-size:20px;" onclick="twilioCall(\''+taskid+'\',\'mo\');">Call</a></td></tr>';
+            }
+            tBody += '<tr height="50px;"><td align="center"><a style="font-size:20px;padding:10px;" href="#" onclick="closeCallPopUp();">Close</a></td></tr></table>';
+            jQuery("#callPopUp").html('');
+            jQuery("#callPopUp").append(tBody);
+            jQuery("#outerMostTable").css("opacity","0.4");
+            jQuery("#callPopUp").show();
+            jQuery("#popouter").show(); 
+        }
+        
+        function closeCallPopUp()
+        {
+            jQuery("#callPopUp").hide();
+            jQuery("#popouter").hide(); 
+            jQuery("#outerMostTable").css("opacity","1");
+        }
+        
+        //This function is called when the requirement checkboxes on the top left are changed.
+        function changeFilterRequirement(requirementCheck)
+        {
+            if(requiredCheck.checked)
+            {
+               requirementTask = ' AND Requirement_Task__c = True';
+            }else{
+                requirementTask = "";
+            }
+            createTableToCall();
+            createTableToDo();
+        }
+        
+        // This called on change of include non turbo checkbox.
+        function changeFilterTurbo(nonTurboCheck)
+        {
+            if(nonTurboCheck.checked)
+            {
+               includeNonTurbo = "";
+            }else{
+                includeNonTurbo = " AND Non_Turbo_Job__c = false "
+            }
+            createTableToCall();
+            createTableToDo();
+        }
+        
+        function changeFiltermytask(mytask){
+            if( mytask.value != '' && mytask.value != '--None--' ){
+                mytaskFilter = " AND X5_Tasks_before_12__c = \'"+mytask.value+"\' ";
+            }else{
+                mytaskFilter = '';
+            }
+            console.log('mytaskFilter='+mytaskFilter);
+            createTableToCall();
+            createTableToDo();
+        }
+        
+        // This called on click of overdue link.
+        function changeFilterOverdue()
+        {
+            var overDue = document.getElementById("overDueLink");
+            var overDueColor = overDue.style.color;
+            if(overDueColor == 'red')
+            {
+               includeOverdue = " AND ActivityDate = TODAY ";
+               overDue.style.color = 'grey';
+               overDue.innerHTML = '<strike>Overdue</strike>';
+            }
+            else
+            {
+                includeOverdue = " AND ActivityDate <= TODAY ";
+                overDue.style.color = 'red';
+                overDue.innerHTML = 'Overdue';
+            }
+            createTableToCall();
+            createTableToDo();
+        }
+        
+        
+        function saveScratchPad(notes)
+        {
+            
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.taskWidgetController.saveScratchNotes}',notes, 
+            function(result, event)
+            {
+                if(event.status)
+                {
+                    console.log('success=');
+                }
+                else if (event.type === 'exception')
+                {
+                    document.getElementById("responseErrors").innerHTML = event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                }
+                else
+                {
+                    document.getElementById("responseErrors").innerHTML = event.message;
+                }
+            });
+        }
+        
+        //This function is called when any of the checkbox is checked/unchecked. Then it updates the particular task.
+        function saveTask(objValue, objId, table)
+        {
+            var Field = objId.substring(0, 3);
+            var taskId = objId.substring(3, objId.length);
+            console.log('objValue= '+objValue);
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.taskWidgetController.saveTask}',Field,objValue,taskId,
+                function(result, event)
+                {
+                    if (event.status) 
+                    {
+                        if(result == 'Success')
+                        {
+                            document.getElementById("responseErrors").style.display = 'none';
+                            if( table == 'ToDo' )
+                            {
+                                createTableToDo();
+                                //createTableHistory();
+                                
+                            }
+                            else if( table == 'ToCall' )
+                            {
+                                createTableToCall();
+                                //createTableHistory();
+                                
+                            }
+                        }
+                        else
+                        {
+                            document.getElementById("responseErrors").innerHTML = result;
+                            document.getElementById("responseErrors").style.color = 'red';
+                            document.getElementById("responseErrors").style.display = 'block';
+                        }
+                    }
+                    else if (event.type === 'exception')
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                    }
+                    else
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message;
+                    }
+                }
+            );
+        }
+        
+        function twilioCall(pid, phORmo)
+        {
+            j("#twiliomsg").text('');
+            var to = '';
+            to = j("#"+phORmo+pid).val();
+            console.log('To==='+to);
+            /*if( phORmo == 'ph'){
+                to = j("#"+phORmo+pid).text('');
+            }else if( phORmo == 'mob' ){
+                to = j("#twiliomsg").text('');
+            }*/
+            if( to != undefined && to != ''){
+                Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.taskWidgetController.TwilioCall}',pid,to,
+                function(result, event)
+                {
+                    if(event.status)
+                    {
+                        j("#twiliomsg").show();
+                        j("#twiliomsg").text(result);
+                        console.log('success='+result);
+                    }
+                    else if (event.type === 'exception')
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                    }
+                    else
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message;
+                    }
+                });
+            }
+        }
+        
+        function selectDeselectTask( theElement ){
+            if(theElement.checked){
+                selectedIds += theElement.value+';';
+            }else{
+                selectedIds = selectedIds.replace(theElement.value+';','');
+            }
+            console.log('selectedIds=: '+selectedIds);
+        }
+        
+        function savemassedit()
+        {
+            j("#masseditmsg").show();
+            j("#masseditmsg").text('Please wait saving tasks...');
+            var dueDate = document.getElementById("dueMassEditDate").value;
+            var priority = document.getElementById("priorityMassEdit").value;
+            var myTasks = document.getElementById("myTasksMassEdit").value;
+            var subTaskSub = document.getElementById("subTaskSubMassEdit").value;
+            var taskResult = document.getElementById("taskResultMassEdit").value;
+            var isComplete = document.getElementById("completeMassEdit").checked;
+            var hideOneHr = document.getElementById("hideOneHourMassEdit").checked;
+            var hideTwoHr = document.getElementById("hideTwoHourMassEdit").checked;
+            var isNonTurbo = document.getElementById("nonTurboMassEdit").checked;
+            console.log(dueDate+priority+isComplete+hideOneHr+hideTwoHr+isNonTurbo);
+            console.log('selectedIds=='+selectedIds);
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.taskWidgetController.saveMassEdit}',selectedIds,dueDate,priority,myTasks,isComplete,isNonTurbo,hideOneHr,hideTwoHr,subTaskSub,taskResult,
+            function(result, event)
+            {
+                if(event.status)
+                {
+                    j("#masseditmsg").hide();
+                    j("#massEditpopUp").hide();
+                    j("#popouter").hide();
+                    j("#outerMostTable").css("opacity","1");
+                    if(result == 'Success')
+                    {
+                        document.getElementById("responseErrors").innerHTML = 'Selected Tasks have been updated successfully.';
+                        document.getElementById("responseErrors").style.color = 'green';
+                        createTableToCall();
+                        createTableToDo();
+                    }
+                    else
+                    {
+                        document.getElementById("responseErrors").innerHTML = result;
+                        document.getElementById("responseErrors").style.color = 'red';
+                    }
+                }
+                else if (event.type === 'exception')
+                {
+                    document.getElementById("responseErrors").innerHTML = event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                }
+                else
+                {
+                    document.getElementById("responseErrors").innerHTML = event.message;
+                    document.getElementById("responseErrors").style.color = 'red';
+                }
+            });
+        }
+        
+        function showmassedit()
+        {
+            var Ids = selectedIds.indexOf(';');
+            if( selectedIds.indexOf(';') != -1 )
+            {
+                j("#massEditpopUp").show();
+                j("#popouter").show(); 
+                j("#outerMostTable").css("opacity","0.25");
+            }
+            else
+            {
+                alert('Please select at least one task');
+            }
+        }
+        function hidemassedit()
+        {
+            j("#massEditpopUp").hide();
+            j("#popouter").hide();
+            j("#outerMostTable").css("opacity","1");
+        }
+        
+        function addNewTask()
+        {
+            j("#taskId").text('');
+            j("#taskmsg").text(''); 
+            j("#editornetask").text('New Task');
+            document.getElementById("pge:formId:owner_lkid").value = '';
+            document.getElementById("pge:formId:owner").value = ''; 
+            document.getElementById("pge:formId:whoid_lkid").value = '';
+            document.getElementById("pge:formId:whatid_lkid").value = '';
+            document.getElementById("pge:formId:whatid").value = '';
+            document.getElementById("pge:formId:whoid").value = '';
+            document.getElementById("pge:formId:subject").value = '';
+            document.getElementById("pge:formId:mytask").value = '';
+            document.getElementById("pge:formId:duedate").value = '';
+            document.getElementById("pge:formId:status").value = '';
+            document.getElementById("pge:formId:tasktype").value = '';
+            document.getElementById("pge:formId:priority").value = '';
+            document.getElementById("pge:formId:subtask").value = '';
+            document.getElementById("nonturbo").checked = false;
+            document.getElementById("pge:formId:notes").value = '';
+            j("#newTaskpopUp").show();
+            j("#popouter").show();
+            j("#outerMostTable").css("opacity","0.25");
+            
+        }
+        function addNewFollowUpTask(whoid,whoname,whatid,whatname,history)
+        {
+            j("#taskId").text('');
+            j("#taskmsg").text(''); 
+            j("#editornetask").text('New Follow up Task');
+            document.getElementById("pge:formId:owner_lkid").value = '{!$USER.Id}';
+            document.getElementById("pge:formId:owner").value = '{!$USER.FirstName +' '+ $USER.LastName}';
+            document.getElementById("pge:formId:whoid_lkid").value = whoid;
+            document.getElementById("pge:formId:whatid_lkid").value = whatid;
+            document.getElementById("pge:formId:whatid").value = whatname;
+            document.getElementById("pge:formId:whoid").value = whoname;
+            document.getElementById("pge:formId:subject").value = '';
+            document.getElementById("pge:formId:mytask").value = '';
+            document.getElementById("pge:formId:duedate").value = '';
+            document.getElementById("pge:formId:status").value = '';
+            document.getElementById("pge:formId:tasktype").value = '';
+            document.getElementById("pge:formId:priority").value = '';
+            document.getElementById("pge:formId:subtask").value = '';
+            document.getElementById("nonturbo").checked = false;
+            
+            document.getElementById("pge:formId:notes").value = history;
+            j("#newTaskpopUp").show();
+            j("#popouter").show();
+            j("#outerMostTable").css("opacity","0.25");
+            
+        }
+        
+        function cancelNewTaskPopUp()
+        {
+            j("#newTaskpopUp").hide();
+            j("#popouter").hide();
+            j("#outerMostTable").css("opacity","1");
+        }
+        
+        function saveNewTask()
+        { 
+            j("#taskmsg").show();
+            j("#taskmsg").text('Please wait saving task...');
+            taskId = j("#taskId").text();
+            var ownerName = document.getElementById("pge:formId:owner_lkid").value;
+            var whoId = document.getElementById("pge:formId:whoid_lkid").value;
+            var whatId = document.getElementById("pge:formId:whatid_lkid").value;
+            var subTaskSub = document.getElementById("pge:formId:subtasksub").value;
+            var taskResult = document.getElementById("pge:formId:taskresult").value;
+            var subject = document.getElementById("pge:formId:subject").value;
+            var myTask = document.getElementById("pge:formId:mytask").value;
+            var dueDate = document.getElementById("pge:formId:duedate").value;
+            var status = document.getElementById("pge:formId:status").value;
+            var taskType = document.getElementById("pge:formId:tasktype").value;
+            var priority = document.getElementById("pge:formId:priority").value;
+            var subTask = document.getElementById("pge:formId:subtask").value;
+            var nonTurbo = document.getElementById("nonturbo").checked;
+            var notes = document.getElementById("pge:formId:notes").value;
+            console.log('taskId=='+taskId);
+            if( whoId == undefined || whoId == null || whoId == 'null' || whoId == '000000000000000' ){
+                whoId = '';
+            }
+            if( whatId == undefined || whatId == null || whatId == 'null' || whatId == '000000000000000' ){
+                whatId = '';
+            }
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.taskWidgetController.saveNewTask1}', 
+                taskId,ownerName,whoId, subject, myTask, dueDate, status, taskType, priority, subTask, nonturbo, notes, whatId, subTaskSub, taskResult,
+                function(result, event)
+                {
+                    j("#taskmsg").show();
+                    j("#taskmsg").text(result);
+                    console.log(event.status);  
+                    if(event.status)
+                    { 
+                        if(result == 'Success')  
+                        {
+                            j("#newTaskpopUp").hide();
+                            j("#popouter").hide();
+                            j("#outerMostTable").css("opacity","1");
+                            document.getElementById("responseErrors").innerHTML = 'Task created/updated successfully.';
+                            document.getElementById("responseErrors").style.color = 'green';
+                            createTableToCall();
+                            createTableToDo();
+                        }
+                        else 
+                        {
+                            document.getElementById("responseErrors").innerHTML = result;
+                            document.getElementById("responseErrors").style.color = 'red';
+                        }
+                    }
+                    else if (event.type === 'exception')
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message + "<br/>\n<pre>" + event.where + "</pre>";
+                    }
+                    else
+                    {
+                        document.getElementById("responseErrors").innerHTML = event.message; 
+                    }
+                }
+            );
+        }
+        function editTask( taskId ){
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            var query = "SELECT Id, Subject, Status, Description, ActivityDate, X5_Tasks_before_12__c, Sub_Task_Sub__c, Task_Result__c, OwnerId, Task_Type__c, Sub_Task__c, Notes__c, Owner.Name, Type, WhoId, Who.Name, WhatId,What.Name, Priority, Non_Turbo_Job__c FROM Task ";
+            var whereC = " WHERE Id = \'"+taskId+"\' " ;
+            var queryTemp = query + whereC;
+            var result = sforce.connection.query(queryTemp); 
+            var records = result.getArray("records");
+            
+            j("#taskmsg").text(''); 
+            j("#taskId").text(taskId);
+            j("#editornetask").text('Edit Task');
+          
+            document.getElementById("pge:formId:owner_lkid").value = records[0].OwnerId;
+            document.getElementById("pge:formId:owner").value = records[0].Owner.Name; 
+            
+            document.getElementById("pge:formId:whoid_lkid").value = records[0].WhoId;
+            if(  records[0].WhoId != '' && records[0].WhoId != null ){
+                document.getElementById("pge:formId:whoid").value = records[0].Who.Name;
+                //var whoidprefix = records[0].WhoId.substr(0,3);
+                //document.getElementById("pge:formId:whoid_mlktp").value = whoidprefix;
+            }
+            
+            document.getElementById("pge:formId:whatid_lkid").value = records[0].WhatId;
+            if( records[0].WhatId != '' && records[0].WhatId != null ){
+                document.getElementById("pge:formId:whatid").value = records[0].What.Name;
+                var whatidprefix = records[0].WhatId.substr(0,3);
+                document.getElementById("pge:formId:whatid_mlktp").value = whatidprefix;
+            }
+                
+            document.getElementById("pge:formId:subject").value = records[0].Subject;
+            document.getElementById("pge:formId:mytask").value = records[0].X5_Tasks_before_12__c;
+            document.getElementById("pge:formId:duedate").value = records[0].ActivityDate;
+            document.getElementById("pge:formId:status").value = records[0].Status;
+            document.getElementById("pge:formId:subtasksub").value = records[0].Sub_Task_Sub__c;
+            document.getElementById("pge:formId:taskresult").value = records[0].Task_Result__c;
+            document.getElementById("pge:formId:tasktype").value = records[0].Task_Type__c;
+            document.getElementById("pge:formId:priority").value = records[0].Priority;
+            document.getElementById("pge:formId:subtask").value = records[0].Sub_Task__c;
+            if( records[0].Non_Turbo_Job__c == '1' ){
+                document.getElementById("nonturbo").checked = true;
+            }else{
+                document.getElementById("nonturbo").checked = false;   
+            }
+            document.getElementById("pge:formId:notes").value = records[0].Notes__c;
+            document.getElementById("pge:formId:noteshistory").innerHTML = records[0].Description;
+            
+            j("#newTaskpopUp").show();
+            j("#popouter").show();
+            j("#outerMostTable").css("opacity","0.25");
+        }
+        
+        function selectAll(isCheck, thisId)
+        {
+            console.log(isCheck);
+            console.log(thisId);
+            var couter = 0;
+            
+            if( isCheck ){
+                if( thisId == 'ToDoSelectAll' ){
+                    j("input[name*='ToDo']:visible" ).each(function() {
+                        if( this.checked ){
+                            
+                        }else{
+                            this.checked = 'checked';
+                            selectedIds += this.value+';';
+                            couter++;
+                        }
+                        
+                    });
+                }
+                if( thisId == 'ToCallSelectAll' ){
+                    j("input[name*='ToCall']:visible").each(function() {
+                       if( this.checked ){
+                            
+                        }else{
+                            this.checked = 'checked';
+                            selectedIds += this.value+';';
+                            couter++;
+                        }
+                       
+                    });
+                }
+                console.log('couter = '+couter);
+                console.log('selectedIds = '+selectedIds); 
+            }else{
+                if( thisId == 'ToDoSelectAll' ){
+                    j("input[name*='ToDo']:visible").each(function() {
+                        j( this ).attr("checked",false);
+                        selectedIds = selectedIds.replace(this.value+';','');
+                        couter++;
+                    });
+                }
+                if( thisId == 'ToCallSelectAll' ){
+                    j("input[name*='ToCall']:visible").each(function() {
+                        j( this ).attr("checked",false);
+                        selectedIds = selectedIds.replace(this.value+';','');
+                        couter++;
+                    });
+                }
+                console.log('couter = '+couter); 
+                console.log('selectedIds = '+selectedIds);
+            }
+            
+        }
+    </script>
+    <style>
+        .msg{
+            text-align: center;
+            font-size: 15px;
+            color: white;
+            font-weight:bold;
+            display: block;
+            width: 99%;
+            background-color: #1797c0;
+            height: 15px;
+            padding: 5px;
+        }
+        .popUp{
+            display:none;
+            width:336px;
+            padding:6px;
+            border: 1px solid grey;
+            position:absolute;
+            top:150px;
+            left:500px;
+            z-index: 999;
+            background-color: white;
+            color: #aaaaaa;
+            //opacity: .4;
+            filter: alpha(opacity = 50);
+            border-radius:4px;
+        }
+        
+        .massEditpopUp{
+            display:none;
+            //width:800px;
+            padding:6px;
+            border: 1px solid grey;
+            background-color:white;
+            position:absolute;
+            top:150px;
+            left:160px;
+            border-radius:4px;
+            //text-align:center;
+        }
+        
+        .newTaskpopUp
+        {
+            display:none;
+            width:890px;
+            padding:6px;
+            border: 1px solid grey;
+            background-color:white;
+            position:absolute;
+            top:150px;
+            left:200px;
+            border-radius:4px;
+        }
+        .action-button
+        {
+            position: relative;
+            padding: 5px 5px;
+            //margin: 0px 10px 10px 0px;
+            border-radius: 8px;
+            font-size: 17px;
+            color: #FFF;
+            text-decoration: none;  
+        }
+        .animate
+        {
+            transition: all 0.1s;
+            -webkit-transition: all 0.1s;
+        }
+        .action-button:active
+        {
+            transform: translate(0px,5px);
+            -webkit-transform: translate(0px,5px);
+            border-bottom: 1px solid;
+        }
+        .blue
+        {
+            background-color: #3498DB;
+            //border-bottom: 5px solid #2980B9;
+            //text-shadow: 0px -2px #2980B9;
+        }
+        .popouter{
+            display : none;
+            width:100%;
+            height:100%;
+            background : transparent;   
+            position: absolute;
+            top:0px;
+            left:0px;  
+        
+        }
+        #table1 td{
+            //vertical-align:middle;
+        }
+    </style>
+    
+    <apex:form style="padding: 0px;  margin-top: 0px;" id="formId">
+    
+    <p id="responseErrors" style="display:none"></p>
+    <table style="width:100%" id="outerMostTable">
+    <tr>
+        <td >
+        <div style="width:100%;margin:0px;" class="inner">            
+        <div class="fluid"> 
+        <div id="Cases" style="margin-top:0px;">
+        
+        <table class="box-table-a" style="margin-top:0px; width:100%; border-bottom: 2px solid #e2e2e2; ">
+            <thead>
+                <tr>
+                    <td style="font-weight:bold;font-size:175%;color: #4b4b4b;">
+                        <img style="vertical-align:middle;" src="{!URLFOR($Resource.taskWidgetDesign, '/image/task-list.png')}"/>&nbsp;Tasks
+                        <img style="vertical-align:middle;background-color: #41a748;cursor: pointer;padding: 2px; border-radius:10px;" src="{!URLFOR($Resource.taskWidgetDesign, '/image/addTasks.png')}" onclick="addNewTask();"/>
+                    </td>
+                    
+                    <td style="text-align:right;font-weight:bold;font-size:175%">
+                        <a href="#" style="text-decoration:none;color:red;font-weight:bold;font-size:100%" id="overDueLink" onclick="changeFilterOverdue();">Overdue</a>
+                        and <b>Today</b>
+                    </td>
+                </tr>
+            </thead>
+            <tr>
+                <td align="right" colspan="2">
+                    <span style="vertical-align:middle;">Required </span><input type="checkbox" id="requiredCheck" style="vertical-align:middle;" onchange="changeFilterRequirement(this);"/> &nbsp;&nbsp;&nbsp;
+                    <span style="vertical-align:middle;">Include Non-Turbo</span> <input type="checkbox" id="nonTurboCheck" style="vertical-align:middle;" onchange="changeFilterTurbo(this);"/> &nbsp;&nbsp;&nbsp;
+                    <span style="vertical-align:middle;">My Task</span> &nbsp;&nbsp;&nbsp;<apex:inputField value="{!task.X5_Tasks_before_12__c}" id="mytaskfilter" style="vertical-align:middle;" onchange="changeFiltermytask(this);"/> &nbsp;&nbsp;&nbsp;
+                    <input type="button" id="showMassEdit" onclick="showmassedit()" class="action-button shadow animate blue" value="Mass Edit" />
+                </td>
+            </tr>
+        </table>
+        <div class="msg" id="tocall" > To Call </div>
+        <div id="tocallMsg" class="msg"> No To Call Tasks </div>
+        <table id="table1" class="advancedtable box-table-a scrolltab" border="0" style="margin-top:0px">
+            <thead>
+                <tr>
+                    <th width="1%"><input type="checkbox" id="ToCallSelectAll" onchange="selectAll(this.checked, this.id);"/></th>
+                    <th width="10%">Contact</th>
+                    <th width="20%">Subject</th>
+                    <th width="10%">WhatId</th>
+                    <th width="95px">Due Date</th>
+                    <th width="6%">Priority</th>
+                    <th width="5%" onclick="orderbysubTasksub();" style="cursor:pointer">Sub Task Sub</th>
+                    <th width="6%">My Tasks</th>
+                    <th width="5%">Result</th>
+                    <th >Complete?</th>
+                    <th >Non-Turbo?</th>
+                    <th >Hide 1 hr</th>
+                    <th >Hide 2 hr</th>
+                    <th>Call</th>
+                </tr>
+            </thead>
+        </table>
+        <br/>
+        <div class="msg" id="todo" > To Do </div>
+        <div id="todoMsg" class="msg"> No To Do Tasks </div>
+        <table id="table2" class="advancedtable box-table-a scrolltab" border="0" style="margin-top:0px">
+            <thead>
+                <tr>
+                    <th width="2%"><input type="checkbox" id="ToDoSelectAll" onchange="selectAll(this.checked, this.id);"/></th>
+                    <th width="10%">Contact</th>
+                    <th width="20%">Subject</th>
+                    <th width="10%">WhatId</th>
+                    <th width="95px">Due Date</th>
+                    <th width="6%">Priority</th>
+                    <th width="5%" onclick="orderbysubTasksub();" style="cursor:pointer">Sub Task Sub</th>
+                    <th width="6%">My Tasks</th>
+                    <th width="5%">Task Result</th>
+                    <th >Complete?</th>
+                    <th >Non-Turbo?</th>
+                    <th >Hide 1 hr</th>
+                    <th >Hide 2 hr</th>
+                    <th>Call</th>
+                </tr>
+            </thead>
+        </table>
+        <br/>
+        <!--<div class="msg" id="history" > Task History </div>
+        <div id="historyMsg" class="msg"> No Recent Completed Tasks </div>
+        <table id="table3" class="advancedtable box-table-a scrolltab" border="0" style="margin-top:0px">
+            <thead>
+                <tr>
+                    <th width="15%">Contact</th>
+                    <th width="35%">Subject</th>
+                    <th width="7%">Due Date</th>
+                    <th width="7%">Completed On</th>
+                    <th width="7%">Hiden</th>
+                </tr>
+            </thead>
+        </table>-->
+        
+        </div>
+        </div>
+        </div>
+        </td>
+        <td style="vertical-align: top;padding-left:10px;width:200px;">
+        <div style="border: 1px solid #DFDFDF;padding:3px;border-radius:3px;width:100%">
+            <table cellspacing="4" cellpadding="4" width="99%%">
+                <thead>
+                    <tr>
+                        <td style="font-weight:bold;font-size:16px;">
+                            <img src="{!URLFOR($Resource.taskWidgetDesign, '/image/scratchpad.png')}" style="vertical-align:middle;"/>&nbsp;ScratchPad
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><br/></td></tr>
+                    <tr>
+                        <td>
+                            <textarea id="scratchpad" placeholder="Take notes here" onchange="saveScratchPad(this.value);" style="height:140px;border: 0px;width:100%;resize: vertical;">{!$User.ScratchPad_Notes__c}</textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        </td>
+        </tr>
+        </table>
+        <div class="popouter" id="popouter">
+            <div class="popUp" id="callPopUp"></div>
+            <div class="massEditpopUp" id="massEditpopUp">
+                <div id="masseditmsg" style="display:none;text-align:center;font-size:16px;color:red"></div>
+                <table style="width: 97%; margin: 8px; font-size: 16px;">
+                    <tr style="height:25px; background: #1797c0">
+                        <th style="padding:10px;color:white">Due Date</th>
+                        <th style="padding:10px;color:white">Priority</th>
+                        <th style="padding:10px;color:white">Task Result</th>
+                        <th style="padding:10px;color:white">Sub Task Sub</th>
+                        <th style="padding:10px;color:white">My Tasks</th>
+                        <th style="padding:10px;color:white">Complete?</th>
+                        <th style="padding:10px;color:white">Hide 1 hr</th>
+                        <th style="padding:10px;color:white">Hide 2 hr</th>
+                        <th style="padding:10px;color:white">Non-Turbo</th>
+                    </tr>
+                    <tr style="height:25px; ">
+                        <td style="padding:10px;"><input type="text" placeholder="Click to open date picker" id="dueMassEditDate"/></td>
+                        <td style="padding:10px;"><select id="priorityMassEdit"><option>-Select-</option><option>Top</option><option>High</option><option>Normal</option><option>Low</option></select></td>
+                        <td style="padding:10px;"><select id="taskResultMassEdit"><option>-Select-</option><option>On Job</option><option>Success</option><option>Failed</option><option>Deferred</option></select></td>
+                        <td style="padding:10px;">
+                            <select id="subTaskSubMassEdit">
+                                <option>-Select-</option><option>Property Update</option><option>Brand Initial</option><option>Brand Follow Up</option><option>F-5 New Brand</option>
+                                <option>F-5 Closed</option><option>Escalation &amp; Tenure End</option><option>F-4 Urgent</option><option>F-4 Normal</option><option>Courier</option>
+                                <option>CSS</option><option>Find Availability</option><option>PIC/Naksha/DMD</option><option>Agreement &amp; Negotiation</option><option>Accounts</option>
+                                <option>Miscellaneous</option><option>Software</option><option>Newspaper &amp; Dealer Prop.</option><option>SMS</option><option>MCR/Prop.Development</option>
+                                <option>Dealer Disclosed</option><option>Dealer Procured</option><option>Client Disclosed</option>
+                            </select>
+                        </td>
+                        <td style="padding:10px;"><select id="myTasksMassEdit"><option>-Select-</option><option>morning</option><option>5 Tasks B/F 12</option><option>Next 5</option><option>Last 5</option><option>Others</option></select></td>
+                        <td style="padding:10px;"><input type="checkbox" id="completeMassEdit"/></td>
+                        <td style="padding:10px;"><input type="checkbox" id="hideOneHourMassEdit"/></td>
+                        <td style="padding:10px;"><input type="checkbox" id="hideTwoHourMassEdit"/></td>
+                        <td style="padding:10px;"><input type="checkbox" id="nonTurboMassEdit"/></td>
+                    </tr>
+                    <tr style="height:25px; "><td colspan="7"></td></tr>
+                    <tr style="height:25px; ">
+                        <td colspan="7" style="text-align: center;  "> 
+                            <a href="#" onclick="savemassedit();" > Save </a> &nbsp;&nbsp;&nbsp;&nbsp;
+                            <a href="#" onclick="hidemassedit()" > Close </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="newTaskpopUp" id="newTaskpopUp">
+                <div id="taskmsg" style="text-align:center;color:red;font-size:16px;"></div>
+                <table cellspacing="4" cellpadding="4" style="padding:4px;">
+                    <tr style="height:25px;">
+                        <td colspan="4" style="font-size:14px;font-weight:bold;text-align:center"><div id="editornetask">Edit Task </div><div id="taskId" style="display:none;"></div></td> 
+                        
+                    </tr>
+                    <tr style="height:32px;"> 
+                        <td width="17%">Assigned To:</td><td width="35%"><apex:inputField id="owner" value="{!task.OwnerId}"/></td> 
+                        <td width="15%">Name: </td><td width="35%"><apex:inputField id="whoid" value="{!task.WhoId}"/></td>
+                    </tr>
+                    <tr style="height:32px;"> 
+                        <td>Due Date: </td><td><apex:inputField id="duedate" value="{!task.ActivityDate}"/></td>
+                        <td >Related To:</td><td ><apex:inputField id="whatid" value="{!task.WhatId}"/></td> 
+                        
+                    </tr>
+                    <tr style="height:32px;">
+                        <td >Subject: </td><td ><apex:inputField id="subject" value="{!task.Subject}"/></td>
+                        <td >My Task: </td><td ><apex:inputField id="mytask" value="{!task.X5_Tasks_before_12__c}"/></td>
+                    </tr>
+                    <tr style="height:32px;">
+                        <td>Task Type: </td><td><apex:inputfield id="tasktype" value="{!task.Task_Type__c}"/></td>
+                        <td >Status: </td><td ><apex:inputField id="status" value="{!task.Status}"/></td>
+                    </tr>
+                    <tr style="height:32px;">   
+                        <td>Sub Task: </td><td><apex:inputfield id="subtask" value="{!task.Sub_Task__c}"/></td>
+                        <td>Task Result: </td><td ><apex:inputField id="taskresult"  value="{!task.Task_Result__c}"/></td>
+                        
+                    </tr>
+                    <tr style="height:32px;"> 
+                        <td >Sub Task Sub: </td><td ><apex:inputField id="subtasksub" value="{!task.Sub_Task_Sub__c}"/></td>
+                        <td>Non Turbo: </td><td><input id="nonturbo" type="checkbox" /></td>
+                    </tr>
+                    
+                    <tr style="height:32px;"> 
+                        <td>Priority: </td><td><apex:inputField id="priority" value="{!task.Priority}"/></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Notes: </td><td ><apex:inputField id="notes" value="{!task.Notes__c}" style="  width: 95%;  height: 50px;"/></td>
+                        <td>Notes History: </td><td ><apex:outputField id="noteshistory"  value="{!task.description}"/></td>
+                    </tr>
+                    <tr style="height:32px;">
+                        <td colspan="4" align="right">
+                            <input type="button" value="Close" onclick="cancelNewTaskPopUp();"/> 
+                            <input type="button" value="Save" onclick="saveNewTask();"/> 
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <script>function setFocusOnLoad() {}</script> 
+    </apex:form>
+</apex:page>

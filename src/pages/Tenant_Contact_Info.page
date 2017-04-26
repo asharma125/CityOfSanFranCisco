@@ -1,0 +1,721 @@
+<apex:page standardController="Account"  extensions="Account_Wizard_Page"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   renderAs="{!renderAs}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Account";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<style>
+{!HTMLENCODE(pdfStyleString)}
+</style><!--[if IE 9 ]> 
+<style>
+.dataTableSet {margin-bottom:auto;}
+</style><![endif]--> </head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.tablesorter.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/addons/pager/jquery.tablesorter.pager.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/tableSortPageingSetting.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+SkyEditor.setProperty('Metadata.CustomObject.Contact', {!metadataJSON_Contact});
+SkyEditor.setProperty('RecordTypes.Contact', {!RecordTypeRecordsJSON_Contact});
+{!IF($ObjectType.Contact.fields.REA_Teams__c.accessible, "SkyEditor.setProperty('PicklistValues.Contact.REA_Teams__c'," + PicklistValuesJSON_Contact_REA_Teams_c + ");", "")};
+{!IF($ObjectType.Contact.fields.Rquirement_Type__c.accessible, "SkyEditor.setProperty('PicklistValues.Contact.Rquirement_Type__c'," + PicklistValuesJSON_Contact_Rquirement_Type_c + ");", "")};
+{!IF($ObjectType.Contact.fields.Floor_Preferred__c.accessible, "SkyEditor.setProperty('PicklistValues.Contact.Floor_Preferred__c'," + PicklistValuesJSON_Contact_Floor_Preferred_c + ");", "")};
+
+</script>
+<script type="text/javascript" import="true">
+
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:outputPanel style="position:relative;" >
+<apex:sectionHeader subtitle="{!record.Name}"   title="{!$ObjectType.Account.Label}"  >
+</apex:sectionHeader></apex:outputPanel><apex:form id="sve_form1"   styleClass="sve_form1"   >
+<apex:outputPanel id="Component150_Wrapper" styleClass="">
+<apex:pageBlock id="Component150"   mode="detail"   title="Tenant Contact Information"   >
+<apex:pageBlockButtons location="both"   >
+<apex:commandButton action="{!edit}"   id="Component695"   value="{!customEditButtonLabel}"   style="width:50px;" /><apex:commandButton action="{!doSave}"   id="Component404"   value="{!customSaveButtonLabel}"   style="width:50px;"   rendered="{!OR($ObjectType.Account.createable,$ObjectType.Account.updateable)}" />
+<apex:commandButton action="{!cancel}"   id="Component405"   rendered="{!!sve_showDeleteCancel}"   value="{!customCancelButtonLabel}"   style="width:66px;" /><apex:commandButton action="{!Component406_doTransfer}"   id="Component406"   value="{!Label.backButton}"   style="width:50px;" /></apex:pageBlockButtons><apex:outputPanel id="Component151_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="">
+<apex:outputPanel id="Component151"   layout="block"   styleClass="dataTableSet"   style="overflow:auto;">
+	<apex:actionRegion >
+<script>SkyEditor.selectedRecords = {};</script>
+<table   class="tableOperator"   id="Component151_header"  >
+<tr  >
+<td  >
+<apex:selectList rendered="{!$ObjectType.Contact.createable && Contact_AccountId.items.size < 500 && $ObjectType.Contact.fields.AccountId.createable}"   size="1"   styleClass="addCountSelect"   value="{!Contact_AccountId.addCount}"   >
+  <apex:selectOption itemLabel="1" itemValue="1" rendered="{! Contact_AccountId.items.size + 1 <= 500}" />
+  <apex:selectOption itemLabel="2" itemValue="2" rendered="{! Contact_AccountId.items.size + 2 <= 500}" />
+  <apex:selectOption itemLabel="3" itemValue="3" rendered="{! Contact_AccountId.items.size + 3 <= 500}" />
+  <apex:selectOption itemLabel="4" itemValue="4" rendered="{! Contact_AccountId.items.size + 4 <= 500}" />
+  <apex:selectOption itemLabel="5" itemValue="5" rendered="{! Contact_AccountId.items.size + 5 <= 500}" />
+</apex:selectList>
+</td><td  >
+<apex:commandButton action="{!Contact_AccountId.add}"   id="Component151_addButton"   immediate="false"   onclick="if(mirrorFormSync('Component151_table','Component151_table_mirror',this)) return false;"   reRender="Component151,messagesPanel"   rendered="{!$ObjectType.Contact.createable && Contact_AccountId.items.size < 500 && $ObjectType.Contact.fields.AccountId.createable}"   value="{!customAddButtonLabel}"   >
+</apex:commandButton><apex:actionStatus id="Component151_addButton_status">
+  <apex:facet name="start">
+    <apex:image url="/img/loading.gif" style="width:16px; height:16px; margin:auto; border:0; vertical-align:middle;" />
+  </apex:facet>
+</apex:actionStatus>
+</td><td  >
+<apex:commandButton action="{!callRemove_Contact_AccountId}"   id="Component151_deleteButton"   immediate="false"   onclick="if(!selectDelete('Component151_table'))return false;if(mirrorFormSync('Component151_table','Component151_table_mirror',this)){arguments[0].preventDefault(); return false; }"   reRender="Component151,messagesPanel"   rendered="{!($ObjectType.Contact.deletable)}"   status="Component151_deleteButton_status"   value="{!label.customSelectionDeleteButtonLabel}"    >
+</apex:commandButton><apex:actionStatus id="Component151_deleteButton_status">
+  <apex:facet name="start">
+    <apex:image url="/img/loading.gif" style="width:16px; height:16px; margin:auto; border:0; vertical-align:middle;" />
+  </apex:facet>
+</apex:actionStatus>
+</td><td  >
+<input type="text" class="filterValue" placeholder="{!label.TableFilterPlaceholder}" /></td></tr></table><apex:outputPanel layout="block"   styleClass="tableWrapper"    >
+<apex:pageBlockTable columnsWidth="30px,42px,,,,,,,,,,"   id="Component151_table"   rows="500"   value="{!Contact_AccountId.items}"   var="Component151_item"   >
+<apex:column style="width:30px;" >
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:30px;display:block;" >
+<apex:inputCheckbox onclick="applyChecked(event, this, 'Component151');"   value="{!Contact_AccountId.selected}"   >
+</apex:inputCheckbox></apex:outputPanel></apex:facet><apex:inputCheckbox id="BulkSelectCheckbox"   onclick="SkyEditor.MirrorForm.update('Component151_table', 'Component151_table_mirror', this);"   styleClass="BulkSelectCheckbox"   value="{!Component151_item.selected}"   >
+</apex:inputCheckbox><script>
+document.getElementById('{!$Component.BulkSelectCheckbox}').setAttribute('rid','{!Component151_item.record.Id}');
+</script></apex:column><apex:column style="width:42px;" >
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:42px;display:block;" >
+</apex:outputPanel></apex:facet><apex:commandButton action="{!Component151_item.remove}"   immediate="false"   reRender="Component151,messagesPanel"   value="{!customDeleteRowButtonLabel}"     rendered="{!OR($ObjectType.Contact.deletable,AND($ObjectType.Contact.accessible,ISNULL(Component151_item.record.Id)))}" /></apex:column><apex:column id="Component152"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Salutation.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component158"   required="false"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.Salutation}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Salutation.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component153"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.FirstName.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component159"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.FirstName}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.FirstName.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component154"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.LastName.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component160"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.LastName}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.LastName.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component155"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.MobilePhone.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component161"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.MobilePhone}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.MobilePhone.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component156"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Mobile_2__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component162"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.Mobile_2__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Mobile_2__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component157"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Land_Line_No__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component165"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.Land_Line_No__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Land_Line_No__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component164"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Email.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component166"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.Email}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Email.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component163"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Personal_Email_Id__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component167"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component151_item.record.Personal_Email_Id__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Personal_Email_Id__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component427"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.REA_Teams__c.accessible}" >
+<apex:outputPanel id="Component428_wrapper"    >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;display:none;" >
+<apex:outputField id="Component428"     value="{!Component151_item.record.REA_Teams__c}" />
+</apex:outputPanel>
+<script>
+new SelectRadioButtons({"objectName":"Contact","fieldName":"REA_Teams__c","targetFieldId":"{!$Component.Component428}","layout":"pageDirection","defaultValue":"{!Component151_item.record.REA_Teams__c}","recordTypeFieldId":null,"styles":{"label":{"color":"#000000","font-size":"1.0em","font-weight":"Normal"}},"noneOption":false}).create();
+</script></apex:outputPanel><apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.REA_Teams__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component429"   style="color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Contact.fields.Contact_Verified_Date__c.accessible}" >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component430"     value="{!Component151_item.record.Contact_Verified_Date__c}" />
+</apex:outputPanel>
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Contact.fields.Contact_Verified_Date__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column></apex:pageBlockTable>
+
+<script type="text/javascript">
+(function () {
+if(jQuery("table[id$='Component151_table'] tbody tr").length > 0){
+	var table, sortOptions, toolbox, filterOptions, pager, pagerOptions;
+	table = document.getElementById("Component151_table") || document.getElementById("{!$Component.Component151_table}");
+	sortOptions = {headers: { 0:{sorter: false}, 1:{sorter: false}, 2:{sorter: "text"}, 3:{sorter: "text"}, 4:{sorter: "text"}, 5:{sorter: "text"}, 6:{sorter: "text"}, 7:{sorter: "text"}, 8:{sorter: "text"}, 9:{sorter: "text"}, 10:{sorter: "text"}, 11:{sorter: "Date"}}};
+	filterOptions = {inlineFilter: {}};
+	SkyEditor.TableSorter.initialize(table, {
+		rowsPerRecord: 1,
+		sort: sortOptions,
+		filter: filterOptions,
+		pager: pagerOptions
+	});
+}
+})();
+</script>
+</apex:outputPanel><apex:outputPanel id="Component151_table_mirror" style="display:none;">
+<apex:actionRegion >
+<apex:selectList size="1" value="{! Contact_AccountId.addCount}">
+		<apex:selectOption itemLabel="1" itemValue="1" />
+		<apex:selectOption itemLabel="2" itemValue="2" />
+		<apex:selectOption itemLabel="3" itemValue="3" />
+		<apex:selectOption itemLabel="4" itemValue="4" />
+		<apex:selectOption itemLabel="5" itemValue="5" />
+</apex:selectList>
+	<apex:repeat rows="500" value="{! Contact_AccountId.items}" var="Component151_table_mirrorFormItem">
+		<apex:inputCheckbox id="BulkSelectCheckbox" styleClass="BulkSelectCheckbox" value="{! Component151_table_mirrorFormItem.selected}" />
+	</apex:repeat>
+	<apex:commandButton id="Component151_table_mirrorFormButton" value="Send" rerender="Component151_table_mirror" oncomplete="jQuery(SkyEditor.reSubmitTarget['{! $Component.Component151_table_mirrorFormButton}']).click();"/>
+</apex:actionRegion>
+</apex:outputPanel>
+<apex:inputTextArea id="Component151_hiddenValue" value="{!Contact_AccountId.hiddenValue}" style="display:none;" rendered="{!$ObjectType.Contact.createable && $ObjectType.Contact.fields.AccountId.createable}"></apex:inputTextArea>
+<apex:commandButton id="Component151_importByJSON" action="{!Contact_AccountId.importByJSON}" style="display:none;" reRender="Component151" rendered="{!$ObjectType.Contact.createable && $ObjectType.Contact.fields.AccountId.createable}" />
+<script type="text/javascript">
+jQuery(document).ready(function () {
+  if (typeof aggregateCalc_all === 'function') {
+    aggregateCalc_all('Component151');
+  }
+});
+
+if(SkyEditor.disableDetailPanel()){
+	jQuery('[id$=Component151]').find('.SVE_DetailPanelBtn').remove();
+}
+</script>
+	</apex:actionRegion>
+</apex:outputPanel>
+</apex:outputPanel>
+</apex:pageBlock>
+</apex:outputPanel><apex:outputPanel id="Component192_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="">
+<apex:outputPanel id="Component192"   layout="block"   styleClass="dataTableSet"   style="overflow:auto;width:Auto;height:230px;">
+	<apex:actionRegion >
+
+
+<apex:outputPanel layout="block"   styleClass="tableWrapper"    >
+<table   border="1"   class="greyTableStyle list tablesorter"   id="Component192_table"   onRowMouseOut="skyeditorRowOut(this)"   onRowMouseOver="skyeditorRowOver(this)"   var="Component192_item"  >
+<!-- this is a multirowtable -->
+<thead class="rich-table-thead Component192_header">
+	<tr >
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				    			    				<th   colspan="1"   id="Component193"   rowspan="1"   style="width:179px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:179px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Suspect__c.accessible}"   value="{!$ObjectType.Contact.fields.Suspect__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component197"   rowspan="1"   style="width:116px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:116px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Min_Area__c.accessible}"   value="{!$ObjectType.Contact.fields.Min_Area__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component201"   rowspan="1"   style="width:731px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:731px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Rquirement_Type__c.accessible}"   value="{!$ObjectType.Contact.fields.Rquirement_Type__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component205"   rowspan="1"   style="width:237px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:237px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.RF_CAR_Notes__c.accessible}"   value="{!$ObjectType.Contact.fields.RF_CAR_Notes__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        		</tr>
+	<tr >
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				    						        	    				    						        	    				    						        	    				    						        	    				    			    				<th   colspan="1"   id="Component194"   rowspan="1"   style="width:179px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:179px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Prospect__c.accessible}"   value="{!$ObjectType.Contact.fields.Prospect__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component198"   rowspan="1"   style="width:116px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:116px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Max_Area_Sq_Ft__c.accessible}"   value="{!$ObjectType.Contact.fields.Max_Area_Sq_Ft__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component202"   rowspan="1"   style="width:731px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:731px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Floor_Preferred__c.accessible}"   value="{!$ObjectType.Contact.fields.Floor_Preferred__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component206"   rowspan="1"   style="width:237px;color:#000000;vertical-align:middle;">
+</th>							        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        		</tr>
+	<tr >
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    			    				<th   colspan="1"   id="Component195"   rowspan="1"   style="width:179px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:179px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Desperate__c.accessible}"   value="{!$ObjectType.Contact.fields.Desperate__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component199"   rowspan="1"   style="width:116px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:116px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Min_Budget_Rs__c.accessible}"   value="{!$ObjectType.Contact.fields.Min_Budget_Rs__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component203"   rowspan="1"   style="width:731px;color:#000000;vertical-align:middle;">
+</th>							        	    				    			    				<th   colspan="1"   id="Component207"   rowspan="1"   style="width:237px;color:#000000;vertical-align:middle;">
+</th>							        	    				    						        	    				    						        	    				    						        	    				    						        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        		</tr>
+	<tr >
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    			    				<th   colspan="1"   id="Component196"   rowspan="1"   style="width:179px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:179px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Running_Restaurant_Takeover__c.accessible}"   value="{!$ObjectType.Contact.fields.Running_Restaurant_Takeover__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component200"   rowspan="1"   style="width:116px;color:#000000;vertical-align:middle;">
+<apex:outputPanel layout="block"   style="width:116px;text-align:left;vertical-align:middle;display:block;" >
+<apex:outputText rendered="{!$ObjectType.Contact.fields.Max_Budget__c.accessible}"   value="{!$ObjectType.Contact.fields.Max_Budget__c.label}"   style="color:#000000;" /></apex:outputPanel></th>							        	    				    			    				<th   colspan="1"   id="Component204"   rowspan="1"   style="width:731px;color:#000000;vertical-align:middle;">
+</th>							        	    				    			    				<th   colspan="1"   id="Component208"   rowspan="1"   style="width:237px;color:#000000;vertical-align:middle;">
+</th>							        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        		</tr>
+</thead>
+<tbody class="Component192_row" >
+<apex:repeat value="{!Contact_AccountId.items}" var="Component192_item">
+	<tr>
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component209"     value="{!Component192_item.record.Suspect__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component212"     value="{!Component192_item.record.Min_Area__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel id="Component217_wrapper"    >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;display:none;" >
+<apex:outputField id="Component217"     value="{!Component192_item.record.Rquirement_Type__c}" />
+</apex:outputPanel>
+<apex:inputHidden id="Component217_hidden"   value="{!Component217_hidden}"  /><script>
+new SelectCheckboxes({"objectName":"Contact","fieldName":"Rquirement_Type__c","targetFieldId":"{!$Component.Component217}","layout":"lineDirection","defaultValue":"{!Component192_item.record.Rquirement_Type__c}","recordTypeFieldId":null,"styles":{"label":{"color":"#000000","font-size":"1.0em","font-weight":"Normal"}},"backupId":"{!$Component.Component217_hidden}"}).create();
+</script></apex:outputPanel></td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component219"     value="{!Component192_item.record.RF_CAR_Notes__c}" />
+</apex:outputPanel>
+</td>							        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        		</tr>
+	<tr>
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				    						        	    				    						        	    				    						        	    				    						        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component210"     value="{!Component192_item.record.Prospect__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component214"     value="{!Component192_item.record.Max_Area_Sq_Ft__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel id="Component218_wrapper"    >
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;display:none;" >
+<apex:outputField id="Component218"     value="{!Component192_item.record.Floor_Preferred__c}" />
+</apex:outputPanel>
+<apex:inputHidden id="Component218_hidden"   value="{!Component218_hidden}"  /><script>
+new SelectCheckboxes({"objectName":"Contact","fieldName":"Floor_Preferred__c","targetFieldId":"{!$Component.Component218}","layout":"lineDirection","defaultValue":"{!Component192_item.record.Floor_Preferred__c}","recordTypeFieldId":null,"styles":{"label":{"color":"#000000","font-size":"1.0em","font-weight":"Normal"}},"backupId":"{!$Component.Component218_hidden}"}).create();
+</script></apex:outputPanel></td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+</td>							        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        		</tr>
+	<tr>
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component211"     value="{!Component192_item.record.Desperate__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component213"     value="{!Component192_item.record.Min_Budget_Rs__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+</td>							        	    				    						        	    				    						        	    				    						        	    				    						        		</tr>
+	<tr>
+        		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    		    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    						        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component216"     value="{!Component192_item.record.Running_Restaurant_Takeover__c}" />
+	<apex:outputText style="display:none;" value="{!Component192_item.record.Running_Restaurant_Takeover__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+<apex:outputPanel styleclass="fieldwrapper " style="color:#000000;font-size:1.0em;font-weight:Normal;" >
+<apex:outputField id="Component215"     value="{!Component192_item.record.Max_Budget__c}" />
+</apex:outputPanel>
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+</td>							        	    				    								<td   colspan="1"   rowspan="1"   style="text-align:left;vertical-align:middle;">
+	<!-- this is a multirowtableColumn -->
+</td>							        		</tr>
+</apex:repeat>
+</tbody>
+</table>
+
+<script type="text/javascript">
+(function () {
+if(jQuery("table[id$='Component192_table'] tbody tr").length > 0){
+	var table, sortOptions, toolbox, filterOptions, pager, pagerOptions;
+	table = document.getElementById("Component192_table") || document.getElementById("{!$Component.Component192_table}");
+	sortOptions = {headers: { 0:{sorter: "text"}, 1:{sorter: "digit"}, 2:{sorter: "text"}, 3:{sorter: "text"}, 4:{sorter: "text"}, 5:{sorter: "digit"}, 6:{sorter: "text"}, 7:{sorter: false}, 8:{sorter: "text"}, 9:{sorter: "currency"}, 10:{sorter: false}, 11:{sorter: false}, 12:{sorter: "text"}, 13:{sorter: "currency"}, 14:{sorter: false}, 15:{sorter: false}}};
+	filterOptions = {inlineFilter: {}};
+	SkyEditor.TableSorter.initialize(table, {
+		rowsPerRecord: 4,
+		sort: sortOptions,
+		filter: filterOptions,
+		pager: pagerOptions
+	});
+}
+})();
+</script>
+</apex:outputPanel><apex:inputTextArea id="Component192_hiddenValue" value="{!Contact_AccountId.hiddenValue}" style="display:none;" rendered="{!$ObjectType.Contact.createable && $ObjectType.Contact.fields.AccountId.createable}"></apex:inputTextArea>
+<apex:commandButton id="Component192_importByJSON" action="{!Contact_AccountId.importByJSON}" style="display:none;" reRender="Component192" rendered="{!$ObjectType.Contact.createable && $ObjectType.Contact.fields.AccountId.createable}"/>
+<script type="text/javascript">
+jQuery(document).ready(function () {
+  if (typeof aggregateCalc_all === 'function') {
+    aggregateCalc_all('Component192');
+  }
+});
+
+if(SkyEditor.disableDetailPanel()){
+	jQuery('[id$=Component192]').find('.SVE_DetailPanelBtn').remove();
+}
+</script>
+	</apex:actionRegion>
+</apex:outputPanel>
+</apex:outputPanel>
+<apex:outputPanel id="Component220_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="">
+<apex:outputPanel id="Component220"   layout="block"   styleClass="dataTableSet"   style="overflow:auto;width:100%;height:142px;">
+	<apex:actionRegion >
+<script>SkyEditor.selectedRecords = {};</script>
+<table   class="tableOperator"   id="Component220_header"  >
+<tr  >
+<td  >
+<apex:commandButton action="{!Brand_Contact_Role_c_Company_c.add}"   id="Component220_addButton"   immediate="false"   onclick="if(mirrorFormSync('Component220_table','Component220_table_mirror',this)) return false;"   reRender="Component220,messagesPanel"   rendered="{!$ObjectType.Brand_Contact_Role__c.createable && Brand_Contact_Role_c_Company_c.items.size < 500 && $ObjectType.Brand_Contact_Role__c.fields.Company__c.createable}"   value="{!customAddButtonLabel}"   >
+</apex:commandButton><apex:actionStatus id="Component220_addButton_status">
+  <apex:facet name="start">
+    <apex:image url="/img/loading.gif" style="width:16px; height:16px; margin:auto; border:0; vertical-align:middle;" />
+  </apex:facet>
+</apex:actionStatus>
+</td><td  >
+<apex:commandButton action="{!Brand_Contact_Role_c_Company_c.cloneRows}"   id="Component220_cloneButton"   onclick="if(!selectDelete('Component220_table'))return false;if(mirrorFormSync('Component220_table','Component220_table_mirror',this))return false;"   reRender="Component220,messagesPanel"   rendered="{!$ObjectType.Brand_Contact_Role__c.createable && Brand_Contact_Role_c_Company_c.items.size < 500 && $ObjectType.Brand_Contact_Role__c.fields.Company__c.createable}"   value="{!label.customCloneButtonLabel}"    >
+</apex:commandButton>
+<apex:actionStatus id="Component220_cloneButton_status">
+  <apex:facet name="start">
+    <apex:image url="/img/loading.gif" style="width:16px; height:16px; margin:auto; border:0; vertical-align:middle;" />
+  </apex:facet>
+</apex:actionStatus>
+</td><td  >
+<input   class="btn"   id="Component220_bulkEditButton"   onclick="jQuery('#Component220_table_editDialog').dialog('open');"   type="button"   value="{!label.customBulkEditButtonLabel}"  /></td><td  >
+<div   id="Component220__pager"   layout="block"  class="pager" style="margin-left:20px; text-align:center;">
+ <table cellpadding="0" cellspacing="0" border="0">
+ <tr>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/first.png')}" class="first"/>
+ </td>
+ <td> 
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/prev.png')}" class="prev"/>
+ </td>
+ <td>
+ <input type="text" class="pagedisplay" readonly="readonly" />
+ </td>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/next.png')}" class="next"/>
+ </td>
+ <td>
+ <img src="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/addons/pager/icons/last.png')}" class="last"/>
+ </td>
+ <td>
+ <select class="pagesize">
+  <option value="5">5</option>
+  <option value="10">10</option>
+  <option value="25">25</option>
+  <option value="50">50</option>
+  <option value="100">100</option>
+ </select>
+ </td>
+ </tr>
+ </table>
+<script>
+	if (typeof LookupHoverDetail === 'function') {
+		LookupHoverDetail.prototype.show = function () {};
+	}
+</script>
+</div></td><td  >
+<apex:outputPanel >
+<apex:variable var="tableMessage1" value=""/>
+<apex:variable var="tableMessage2" value=""/>
+<apex:variable var="tableMessage3" value="Remember to link the Contact Manually once you have saved it."/>
+<apex:outputText id="Component220_msg" style="{!'color:#FF0000;font-weight:normal;font-size:1.0em;'}" value="{!tableMessage3}"/></apex:outputPanel></td></tr></table><apex:outputPanel layout="block"   styleClass="tableWrapper"    >
+<apex:dataTable columnsWidth="30px,42px,,,,,,"   id="Component220_table"   onRowMouseOut="skyeditorRowOut(this)"   onRowMouseOver="skyeditorRowOver(this)"   rows="500"   styleClass="greyTableStyle"   value="{!Brand_Contact_Role_c_Company_c.items}"   var="Component220_item"  >
+<apex:column style="width:30px;" >
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:30px;display:block;" >
+<apex:inputCheckbox onclick="applyChecked(event, this, 'Component220');"   value="{!Brand_Contact_Role_c_Company_c.selected}"   >
+</apex:inputCheckbox></apex:outputPanel></apex:facet><apex:inputCheckbox id="BulkSelectCheckbox"   onclick="SkyEditor.MirrorForm.update('Component220_table', 'Component220_table_mirror', this);"   styleClass="BulkSelectCheckbox"   value="{!Component220_item.selected}"   >
+</apex:inputCheckbox><script>
+document.getElementById('{!$Component.BulkSelectCheckbox}').setAttribute('rid','{!Component220_item.record.Id}');
+</script></apex:column><apex:column style="width:42px;" >
+<apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:42px;display:block;" >
+</apex:outputPanel></apex:facet><apex:commandButton action="{!Component220_item.remove}"   immediate="false"   reRender="Component220,messagesPanel"   value="{!customDeleteRowButtonLabel}"     rendered="{!OR($ObjectType.Brand_Contact_Role__c.deletable,AND($ObjectType.Brand_Contact_Role__c.accessible,ISNULL(Component220_item.record.Id)))}" /></apex:column><apex:column id="Component221"   style="width:115px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.Name.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component225"   required="false"   style="width:107px;height:14px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.Name}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:115px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.Name.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component222"   style="width:135px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.Decision_Maker__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component228"   required="false"   style="color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.Decision_Maker__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:135px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.Decision_Maker__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component224"   style="width:116px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.Brand_Relationship__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component229"   required="false"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.Brand_Relationship__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:116px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.Brand_Relationship__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component411"   style="width:137px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.Contact__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component412"   required="false"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.Contact__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:137px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.Contact__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component413"   style="width:137px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.NEW_BRAND__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component414"   required="false"   style="width:107px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.NEW_BRAND__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:137px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.NEW_BRAND__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column><apex:column id="Component223"   style="width:237px;color:#000000;text-align:left;vertical-align:middle;"   rendered="{!$ObjectType.Brand_Contact_Role__c.fields.Notes__c.accessible}" >
+<apex:outputPanel styleclass="" style="" >
+<apex:inputField id="Component227"   required="false"   style="width:228px;height:96px;color:#000000;font-size:1.0em;font-weight:Normal;"   value="{!Component220_item.record.Notes__c}">
+</apex:inputField>
+</apex:outputPanel>
+ <apex:facet name="header"   >
+<apex:outputPanel layout="inline"   style="width:237px;text-align:left;display:block;" >
+<apex:outputText value="{!$ObjectType.Brand_Contact_Role__c.fields.Notes__c.label}"   style="color:#000000;" /></apex:outputPanel></apex:facet></apex:column></apex:dataTable>
+
+<script type="text/javascript">
+(function () {
+if(jQuery("table[id$='Component220_table'] tbody tr").length > 0){
+	var table, sortOptions, toolbox, filterOptions, pager, pagerOptions;
+	table = document.getElementById("Component220_table") || document.getElementById("{!$Component.Component220_table}");
+	sortOptions = {headers: { 0:{sorter: false}, 1:{sorter: false}, 2:{sorter: "text"}, 3:{sorter: "text"}, 4:{sorter: "text"}, 5:{sorter: "text"}, 6:{sorter: "text"}, 7:{sorter: "text"}}};
+	filterOptions = {inlineFilter: {}};
+	pager = document.getElementById("Component220__pager");
+	pagerOptions = {
+		container: jQuery(pager),
+		size: 5
+	};
+	SkyEditor.TableSorter.initialize(table, {
+		rowsPerRecord: 1,
+		sort: sortOptions,
+		filter: filterOptions,
+		pager: pagerOptions
+	});
+}
+})();
+</script>
+</apex:outputPanel><apex:outputPanel id="Component220_table_mirror" style="display:none;">
+<apex:actionRegion >
+	<apex:repeat rows="500" value="{! Brand_Contact_Role_c_Company_c.items}" var="Component220_table_mirrorFormItem">
+		<apex:inputCheckbox id="BulkSelectCheckbox" styleClass="BulkSelectCheckbox" value="{! Component220_table_mirrorFormItem.selected}" />
+	</apex:repeat>
+	<apex:commandButton id="Component220_table_mirrorFormButton" value="Send" rerender="Component220_table_mirror" oncomplete="jQuery(SkyEditor.reSubmitTarget['{! $Component.Component220_table_mirrorFormButton}']).click();"/>
+</apex:actionRegion>
+</apex:outputPanel>
+<apex:inputTextArea id="Component220_hiddenValue" value="{!Brand_Contact_Role_c_Company_c.hiddenValue}" style="display:none;" rendered="{!$ObjectType.Brand_Contact_Role__c.createable && $ObjectType.Brand_Contact_Role__c.fields.Company__c.createable}"></apex:inputTextArea>
+<apex:commandButton id="Component220_importByJSON" action="{!Brand_Contact_Role_c_Company_c.importByJSON}" style="display:none;" reRender="Component220" rendered="{!$ObjectType.Brand_Contact_Role__c.createable && $ObjectType.Brand_Contact_Role__c.fields.Company__c.createable}" />
+<script type="text/javascript">
+jQuery(document).ready(function () {
+  if (typeof aggregateCalc_all === 'function') {
+    aggregateCalc_all('Component220');
+  }
+});
+
+if(SkyEditor.disableDetailPanel()){
+	jQuery('[id$=Component220]').find('.SVE_DetailPanelBtn').remove();
+}
+</script>
+	</apex:actionRegion>
+</apex:outputPanel>
+</apex:outputPanel>
+</apex:form><apex:outputPanel style="position:relative;" >
+<apex:outputPanel rendered="{!record.Id != null}"   >
+<apex:outputPanel styleclass="fieldwrapper " style="overflow:auto;display:block;" >
+	<chatter:feedWithFollowers id="Component685"    showHeader="true"   entityId="{!record.Id}" />
+</apex:outputPanel>
+<script>
+if (typeof window.addEventListener == 'undefined' && typeof document.querySelectorAll == 'undefined') {
+jQuery('[id $= Component685]').parent().css('max-height','');
+}
+
+</script></apex:outputPanel></apex:outputPanel><script type="text/javascript">
+function aggregateCalc_all(triggerId) {
+}
+</script>
+<div style="border:solid 1px #CCC; display:none;" id="Component220_table_editDialog">
+  <apex:form id="Component707">
+    <apex:panelGrid columns="2">
+      <apex:outputLabel >{!label.customFieldSelectionLabel}</apex:outputLabel>
+      <apex:actionRegion >
+        <apex:selectList id="Component220_table_selecter" value="{!Brand_Contact_Role_c_Company_c_selectval}" size="1">
+          <apex:selectOption itemValue="" itemLabel="{!label.customSelectOptionNoneLabel}" />
+          <apex:selectOption itemValue="Component225_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.Name.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Name.createable)}" />
+          <apex:selectOption itemValue="Component228_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.Decision_Maker__c.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Decision_Maker__c.createable)}" />
+          <apex:selectOption itemValue="Component229_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.Brand_Relationship__c.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Brand_Relationship__c.createable)}" />
+          <apex:selectOption itemValue="Component412_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.Contact__c.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Contact__c.createable)}" />
+          <apex:selectOption itemValue="Component414_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.NEW_BRAND__c.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.NEW_BRAND__c.createable)}" />
+          <apex:selectOption itemValue="Component227_dedit" itemLabel="{!$ObjectType.Brand_Contact_Role__c.fields.Notes__c.label}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Notes__c.createable)}" />
+        </apex:selectList>
+      </apex:actionRegion>
+      <apex:outputLabel >{!label.customValueLabel}</apex:outputLabel>
+      <apex:outputPanel >
+        <div id="Component225_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component225_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.Name}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Name.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+        <div id="Component228_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component228_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.Decision_Maker__c}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Decision_Maker__c.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+        <div id="Component229_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component229_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.Brand_Relationship__c}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Brand_Relationship__c.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+        <div id="Component412_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component412_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.Contact__c}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Contact__c.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+        <div id="Component414_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component414_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.NEW_BRAND__c}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.NEW_BRAND__c.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+        <div id="Component227_dedit_div">
+          <apex:outputPanel >
+            <apex:inputField id="Component227_dedit" value="{!Brand_Contact_Role_c_Company_c_Conversion.Notes__c}" rendered="{!AND($ObjectType.Brand_Contact_Role__c.fields.Notes__c.createable)}" required="false" />
+          </apex:outputPanel>
+        </div>
+      </apex:outputPanel>
+    </apex:panelGrid>
+    <apex:outputPanel layout="block" style="margin-top:20px;text-align:center;">
+      <input type="button" class="btn" value="{!label.customEditButtonLabel}" onclick="setTableValue('Component220_table','Component220_table_editDialog')" />
+      <input type="button" class="btn" value="{!label.customBulkEditWindowCloseButtonLabel}" onclick="closeBulkEditDialog('Component220_table','Component220_table_editDialog')" />
+    </apex:outputPanel>
+  </apex:form>
+</div><script type="text/javascript">jQuery('#Component220_table_editDialog').dialog({autoOpen: false});openBulkEditDialog('Component220_table','Component220_table_editDialog');
+jQuery(escapeID('#{!$Component.Component707.Component220_table_selecter}')).change(function() {
+    var divs = jQuery('#Component225_dedit_div,#Component228_dedit_div,#Component229_dedit_div,#Component412_dedit_div,#Component414_dedit_div,#Component227_dedit_div')
+ 
+    if (divs.length){
+        divs.hide();
+    }else{
+        return;
+   }
+    var selectItem = jQuery('#'+jQuery(this).find('option:selected').attr('value')+'_div');
+	   if (jQuery(selectItem).length){
+    selectItem.show();
+    }
+}).change();</script><script type="text/javascript"></script>
+</apex:outputPanel>
+</td></tr></table>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

@@ -1,0 +1,63 @@
+<apex:page >
+    <apex:sectionHeader title="Phonedeck" subtitle="Installation Guide"/>
+    <apex:pageBlock title="Congratulations">
+        <p>Thank you for installing Phonedeck.</p>
+        <p>Please follow a few final steps to grant all the permissions your users need. Alternatively you can <a href="https://phonedeck.com/documentation/" target="_blank">read Phonedeck's user's and administrator's guide.</a></p>
+    </apex:pageBlock>
+    <apex:pageBlock title="What's new">
+        <div style="width:600px;">
+            <img src="{!URLFOR($Resource.InstallationGuideResources, '/wn-dashboard.png')}" style="text-align:center"/>
+            <div style="margin-top:10px;">
+                <h1>
+                    Brand new Phonedeck
+                </h1>
+                <p>
+                    Use Phonedeck to speed up your everyday workflow. It saves you time and boosts your productivity. Find all important features in one view: MyPhone, Task list, History, Calendar, Contact search and Scratchpad.
+                </p>
+                    <ul>
+                        <li>check your today tasks by choosing the right date in the calendar</li>
+                        <li>start the call directly from the task list</li>
+                        <li>create a new task with one click</li>
+                        <li>take a call using the MyPhone (Remote feature)</li>
+                        <li>make a note and log the call directly in the MyPhone widget</li>
+                        <li>search contacts easily</li>    
+                    </ul>
+                <p>
+                    All call information is automatically updated on your Smartphone inside the mobile app of your CRM as well as in the dedicated Phonedeck app – forget about manual synchronization.
+                </p>
+            </div>
+            <br style="clear:both;" />
+            <br style="margin-top:20px;" />
+            <img src="{!URLFOR($Resource.InstallationGuideResources, '/wn-myphone.png')}" style="float:left; margin-right:10px" />
+            <div>
+                <h1>
+                    New UI for MyPhone
+                </h1>
+                <p>
+                    Experience new user interface for MyPhone. It lets you manage easily all incoming and outgoing calls, make the notes during the call or log the call directly after conversation.
+                </p>
+            	<div style="margin-top:20px;">
+                    <h1>
+                        Remote feature for iPhones on Windows
+                    </h1>
+                    <p>
+                        You are now able to control your iPhone remotely from the Windows browser. Install the Phonedeck Bluetooth application on your computer and just pair the devices. You are ready to make, take and log the calls directly from the Windows browser or take Salesforce on the road using your iPhone. Have your call workflow at hand wherever you are.
+                    </p>
+            	</div>
+            </div>
+            <br style="clear:both;"/>
+    	</div>
+    </apex:pageBlock>
+    <apex:pageBlock title="Assigning Licenses">
+        <p>When your trial period expires you will have to choose the users that are allowed to use Phonedeck. Go to the <a href="/0A3?setupid=ImportedPackage" target="_blank">Installed Packages</a> setup page to assign licenses.</p>
+    </apex:pageBlock>
+    <apex:pageBlock title="Required Permissions">
+        <p>You have to grant permissions by assigning the <b>Phonedeck Standard User</b> permission set to the Phonedeck users. Salesforce has an excellent blog entry about <a href="http://blogs.salesforce.com/product/2011/12/permission-sets-best-practice-mass-assign-permission-sets-and-other-cool-things-using-the-api.html" target="_blank">assigning permission sets to multiple users</a>.</p>
+    </apex:pageBlock>
+	<apex:pageBlock title="Configure SoftPhone Layout">
+        <p>The remote control functions of Phonedeck are integrated as a Salesforce OpenCTI 2.0 softphone. To configure how to react to incoming calls, configure a softphone layout at <a href="/04n" target="_blank">Setup > Customize > Call Center > SoftPhone Layouts</a>.</p>
+    </apex:pageBlock>    
+	<apex:pageBlock title="Assign Call Center">
+        <p>Phonedeck users can control their phones using Salesforce's Softphone widget. The widget can be enabled by assigning the Phonedeck call center to the users. To assign a call center, please follow the <a href="https://help.salesforce.com/apex/HTViewHelpDoc?id=cti_admin_manageagentsadd.htm&language=en" target="_blank">official documentation</a>.</p>
+    </apex:pageBlock>
+</apex:page>

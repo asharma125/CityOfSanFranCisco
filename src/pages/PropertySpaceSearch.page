@@ -1,0 +1,300 @@
+<apex:page id="page" controller="SpaceSearch_Class" sidebar="false" showchat="true" >
+    <style>
+        .image img{
+            height:290px;
+            width:585px;
+            box-shadow: 5px 5px 3px #888;
+        }
+        .criteria {
+            font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+            width:75%;
+            border-color: grey;
+            border-collapse:collapse;
+            font-weight: bold;
+        }
+        .criteria td, .criteria th {
+            font-size:1em;
+            //border:1px solid grey;
+            padding:3px 7px 2px 7px;
+            vertical-align: middle;
+        }
+        .criteria th {
+            font-size:1.1em;
+            text-align:left;
+            padding-top:5px;
+            padding-bottom:4px;
+            background-color:#A7C942;
+            color:#ffffff;
+            vertical-align: middle;
+        }
+        .criteria tr.alt td {
+            color:#000000;
+            background-color:#EAF2D3;
+        }
+    </style>
+    <apex:outputPanel id="script">
+    <script>
+        function openNewWindow(){
+            window.open('/apex/generateSpacePdf?ids={!spaceIds}','_blank');
+        }
+    
+    </script>
+    </apex:outputPanel>
+    <apex:form id="frm">
+        <apex:outputpanel >
+            <apex:actionstatus id="status">
+                <apex:facet name="start">
+                    <div class="waitingSearchDiv" id="el_loading" style="background-color: #fbfbfb;
+                           height: 200%;opacity:0.65;width:100%;"> 
+                        <div class="waitingHolder" style="top: 220px; width: 121px;">
+                            <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                            <span class="waitingDescription">Loading...</span>
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:outputpanel>
+        
+        <center>
+        <apex:outputpanel id="pan1" rendered="{!IsSearch}"> 
+        <br/>
+        <br/>
+        <header style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:20px;"> <h1>Space Search</h1> <br/>
+            <font style="font-size:12px;">Please enter Search Criteria and then press "Search Spaces" to search spaces.</font>
+        </header>
+        <br/>
+        <table class="criteria" frame="box"> 
+            <tr >
+                <th colspan="6" >Search Criteria </th>
+            </tr>
+            <tr >
+                <td >Available for Rent </td>
+                <td><apex:inputfield value="{!Space_Temp.Available_For_Rent__c}"/> </td>
+                <td>Location City </td>
+                <td>
+                    <apex:inputfield value="{!Prop_Temp.Location_City_new__c}" >
+                        <apex:actionSupport event="onchange" action="{!refresh}" reRender="pan1,pan2" status="status"/>
+                    </apex:inputfield>
+                 </td>
+                <td>Location</td>
+                <td>
+                    <apex:selectList value="{!Sp_location}" multiselect="true" size="3">
+                        <apex:selectOptions value="{!Location}"/>
+                    </apex:selectList>
+                </td>
+            </tr>
+            <tr >
+                <td>Floor - Rent </td>
+                <td colspan="3"><apex:inputfield value="{!Space_Temp.Floor_Rent__c}"/> </td>
+                <td>ZSuits </td>
+                <td ><apex:inputfield value="{!Space_Temp.ZSuits__c}"/> </td>
+                
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right;">
+                    <apex:CommandButton value="Search Spaces" action="{!Search_Space}" reRender="pan2" status="status"/>
+                </td>
+                <td colspan="3" style="text-align: left;"> 
+                    <apex:CommandButton value="Search Spaces Strict" action="{!Search_Space_Strict}" reRender="pan2" status="status"/>
+                </td>
+            </tr>
+        </table>
+        <br/>
+        </apex:outputpanel>
+        <apex:outputpanel id="pan2" rendered="{!IsSearch}">
+        <div style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:16px; background-color:#A7C942;width:75%;height:30px;"> 
+            <h1 >Searched Spaces</h1> <br/><br/>
+        </div>
+        <div style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:16px; background-color:#A7C942;width:75%;height:30px;"> 
+            <apex:CommandButton value="Next" action="{!Next}" reRender="frm,script" status="status"/>
+        </div>
+        <div style="width:75%;"><apex:pagemessages /></div>
+            <apex:repeat value="{!Spaces}" var="Space">
+                <table class="image" style="width:75%;border-color:blue;border-collapse:collapse; box-shadow: 5px 5px 3px #888;" border="1">
+                    <tr>
+                        <td>
+                            <table >
+                                <tr>
+                                    <td colspan="3" style="align:center;padding:5px;">
+                                        <div align="center" style="font-size: 15px;color: orange;font-weight: bold; text-shadow: 1px 1px 0px #888;">
+                                            <apex:outputLink value="/{!Space.space.Id}" target="_blank" style="color:orange"><apex:outputField value="{!Space.space.Old_Signage__c}"/> &nbsp;&nbsp; (<apex:outputField value="{!Space.space.Property_No__c}" /> &nbsp;&nbsp; <apex:outputField value="{!Space.space.Space_Location_1__c}"/>&nbsp;&nbsp; <apex:outputField value="{!Space.space.Property__r.Location_Sub_new__c}"/> )</apex:outputLink><br/>
+                                            <div style="font-size: 14px;color:black;font-weight: bold;text-shadow:none;"> Available for Rent:<apex:outputText value=" {!Space.space.Floorwise_Area__c} "/>
+                                             <apex:outputText value=" Sq. Ft. " rendered="{!!(CONTAINS(Space.space.Floorwise_Area__c,'Sq. Ft.') || CONTAINS(Space.space.Floorwise_Area__c,'Sq.Ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq. ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq.ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq.ft'))}"/> for asking Rent:  
+                                                <apex:outputField value="{!Space.space.Rent_Month__c}"/> per Month
+                                            </div>
+                                        </div>
+                                    </td> 
+                                </tr>
+                                <tr>
+                                    <td style="vertical-align: middle;width:2%;">
+                                        <apex:inputCheckbox value="{!Space.IsSelected}"/>
+                                    </td>
+                                    <td style="width:65%;padding:15px;">
+                                        <apex:image value="{!URLFOR($Resource.SamplePIc)}" style="width:100%;height:290px;box-shadow: 3px 3px 2px #888;" rendered="{!Space.space.Property__r.Property_Picture__c == null}"></apex:image>
+                                        <apex:outputField id="image" value="{!Space.space.Property__r.Property_Picture__c}" style="width:100%;height:290px;box-shadow: 3px 3px 2px #888;" rendered="{!Space.space.property__r.Property_Picture__c != null}"/>
+                                    </td>
+                                    <td style="width:33%;padding:15px;">
+                                        <div style="width:100%;">
+                                            <table style="width:100%;font-weight:normal; font-size:13px;font-weight: bold;border-color:orange;height:290px;box-shadow: 3px 3px 2px #888;padding:5px;" frame="box" >
+                                                <tr>
+                                                    <td style="width:120px;"> Covered Area </td><td style="width:20px;"> : </td><td style="width:170px;"><apex:outputField value="{!Space.space.Covered_Area_Sq_Ft__c}"/> Sq. Ft.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Floor </td><td>:</td><td> <apex:outputField value="{!Space.space.Floor_Rent__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Floorwise Area </td><td>:</td><td><apex:outputField value="{!Space.space.Floorwise_Area__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Asking Rent </td><td>:</td><td><apex:outputField value="{!Space.space.Rent_Month__c}"/><br/>
+                                                    <div style="font-size:10px;">(Rent per Sq. ft. {!Space.space.Rent_PSF_on_Covered_Area__c})</div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > May Settle </td><td>:</td><td><apex:outputField value="{!Space.space.May_Settle_Rent__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Agreement Type </td><td>:</td><td><apex:outputField value="{!Space.space.Agreement_Type__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Entry From </td><td>:</td><td><apex:outputField value="{!Space.space.Entry_From__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Frontage </td><td>:</td><td><apex:outputField value="{!Space.space.Frontage_Ft__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > DFS Date </td><td>:</td><td><apex:outputField value="{!Space.space.DFS_Date__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > DMD Link </td><td>:</td><td> <apex:outputfield value="{!Space.space.property__r.DMD_Link__c}" /></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> Space Notes:</b><br/>
+                            <apex:outputField value="{!Space.space.Space_Notes_Lease__c}"/>
+                        </td>
+                    </tr>
+                    <tr>    
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> Client  Notes:</b><br/>
+                                <apex:outputField value="{!Space.space.Client_Remarks_Lease__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> R &amp; S History:</b><br/>
+                            <apex:outputField value="{!Space.space.R_S_History__c}"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                
+            </apex:repeat>
+            <div style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:16px; background-color:#A7C942;width:75%;height:30px;"> 
+                <apex:CommandButton value="Next" action="{!Next}" reRender="frm,script" status="status"/>
+            </div>
+        </apex:outputpanel>
+        <apex:outputpanel id="pan3" rendered="{!!IsSearch}">
+        <div style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:16px; background-color:#A7C942;width:75%;height:30px;"> 
+            <h1 >Searched Spaces</h1> <br/><br/>
+        </div> 
+        <div style="font-family:Trebuchet MS, Arial, Helvetica, sans-serif;font-size:16px; background-color:#A7C942;width:75%;height:30px;"> 
+            <apex:CommandButton value="Back" action="{!Back}" reRender="frm" status="status"/>
+            <apex:CommandButton value="Generate Pdf" onclick="openNewWindow()" /> 
+        </div>
+        <div style="width:75%;"><apex:pagemessages /></div>
+            <apex:repeat value="{!Selected_Spaces}" var="Space"> 
+                <table class="image" style="width:75%;border-color:blue;border-collapse:collapse; box-shadow: 5px 5px 3px #888;" border="1">
+                    <tr>
+                        <td>
+                            <table >
+                                <tr>
+                                    <td colspan="3" style="align:center;padding:5px;">
+                                        <div align="center" style="font-size: 15px;color: orange;font-weight: bold; text-shadow: 1px 1px 0px #888;">
+                                            <apex:outputLink value="/{!Space.space.Id}" target="_blank" style="color:orange"><apex:outputField value="{!Space.space.Old_Signage__c}"/> &nbsp;&nbsp; (<apex:outputField value="{!Space.space.Property_No__c}" /> &nbsp;&nbsp; <apex:outputField value="{!Space.space.Space_Location_1__c}"/> &nbsp;&nbsp; <apex:outputField value="{!Space.space.Property__r.Location_Sub_new__c}"/>)</apex:outputLink><br/>
+                                            <div style="font-size: 14px;color:black;font-weight: bold;text-shadow:none;"> Available for Rent:<apex:outputText value=" {!Space.space.Floorwise_Area__c} "/>
+                                             <apex:outputText value=" Sq. Ft. " rendered="{!!(CONTAINS(Space.space.Floorwise_Area__c,'Sq. Ft.') || CONTAINS(Space.space.Floorwise_Area__c,'Sq.Ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq. ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq.ft.') || CONTAINS(Space.space.Floorwise_Area__c,'sq.ft'))}"/> for asking Rent:  
+                                                <apex:outputField value="{!Space.space.Rent_Month__c}"/> per Month
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td style="width:65%;padding:15px;">
+                                        <apex:image value="{!URLFOR($Resource.SamplePIc)}" style="width:100%;height:290px;box-shadow: 3px 3px 2px #888;" rendered="{!Space.space.Property__r.Property_Picture__c == null}"></apex:image> 
+                                        <apex:outputField id="image" value="{!Space.space.Property__r.Property_Picture__c}" style="width:100%;height:290px;box-shadow: 3px 3px 2px #888;"/>
+                                    </td>
+                                    <td style="width:35%;padding:15px;">
+                                        <div style="width:100%;">
+                                            <table style="width:100%;font-weight:normal; font-size:13px;font-weight: bold;border-color:orange;height:290px;box-shadow: 3px 3px 2px #888;padding:5px;" frame="box" >
+                                                <tr>
+                                                    <td style="width:120px;"> Covered Area </td><td style="width:20px;"> : </td><td style="width:170px;"><apex:outputField value="{!Space.space.Covered_Area_Sq_Ft__c}"/> Sq. Ft.</td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Floor </td><td>:</td><td> <apex:outputField value="{!Space.space.Floor_Rent__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Floorwise Area </td><td>:</td><td><apex:outputField value="{!Space.space.Floorwise_Area__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Asking Rent </td><td>:</td><td><apex:outputField value="{!Space.space.Rent_Month__c}"/><br/>
+                                                    <div style="font-size:10px;">(Rent per Sq. ft. {!Space.space.Rent_PSF_on_Covered_Area__c})</div></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > May Settle </td><td>:</td><td><apex:outputField value="{!Space.space.May_Settle_Rent__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Agreement Type </td><td>:</td><td><apex:outputField value="{!Space.space.Agreement_Type__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Entry From </td><td>:</td><td><apex:outputField value="{!Space.space.Entry_From__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > Frontage </td><td>:</td><td><apex:outputField value="{!Space.space.Frontage_Ft__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > DFS Date </td><td>:</td><td><apex:outputField value="{!Space.space.DFS_Date__c}"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td > DMD Link </td><td>:</td><td> <apex:outputfield value="{!Space.space.property__r.DMD_Link__c}" /></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> Space Notes:</b><br/>
+                            <apex:outputField value="{!Space.space.Space_Notes_Lease__c}"/>
+                        </td>
+                    </tr>
+                    <tr>    
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> Client  Notes:</b><br/>
+                            <apex:outputField value="{!Space.space.Client_Remarks_Lease__c}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="height: 45px;padding:5px;padding-left:40px;">
+                            <b> R &amp; S History:</b><br/>
+                            <apex:outputField value="{!Space.space.R_S_History__c}"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+            </apex:repeat>
+        </apex:outputpanel> 
+        </center>
+        
+    </apex:form>
+</apex:page>

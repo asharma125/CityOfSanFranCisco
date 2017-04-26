@@ -1,0 +1,60 @@
+<apex:page controller="deskio.SendSMSController">
+    <script type="text/javascript">
+    function updateCharCounter(inputElement, outputElement) {
+        var perMessage = 160;
+        var typedChars = inputElement.value.length;
+        var numSMS = Math.max(Math.ceil(typedChars/perMessage),1);
+        console.log(typedChars, (160-(typedChars%160)), (typedChars > 160)?'('+Math.floor(typedChars/160)+')':'');
+        outputElement.innerHTML = (perMessage * numSMS - typedChars)+' ('+numSMS+')';
+    }
+    </script>
+    <apex:form >   
+        <apex:sectionHeader title="Send SMS"/>
+        
+        <apex:pageBlock title="Error" rendered="{!mode == 'ERROR'}">
+            <apex:pageMessage severity="error" strength="3" summary="{!error}" />
+        </apex:pageBlock>
+        
+        <apex:pageBlock title="" mode="edit" rendered="{!mode == 'NORMAL'}">    
+            <apex:pageMessages />
+        	<apex:pageBlockButtons >
+                <apex:commandButton value="Send" action="{!send}"/>
+                <apex:commandButton value="Cancel" action="{!cancel}" immediate="true"/>            
+        	</apex:pageBlockButtons>
+            <apex:pageBlockSection id="contactInfo" columns="1" title="Select Receiver">
+                <apex:inputField value="{!smsTask.whoId}" id="inputWhoId">
+                    <apex:actionSupport event="onchange" reRender="contactInfo, numberSelector, smsEditor" />
+                </apex:inputField>
+                <apex:outputPanel id="numberSelector">
+                <apex:pageBlockTable value="{!phoneNumbers}" var="n" rendered="{!NOT(ISNULL(phoneNumbers))}">
+                    <apex:column width="50" headerValue="">
+                        <apex:actionSupport event="onclick" reRender="numberSelector, smsEditor">
+                            <apex:param name="p1" value="{!n.phonenumber}" assignTo="{!smsTask.MessagePhoneNumber__c}" />
+                            <apex:outputPanel rendered="{!n.phonenumber == smsTask.deskio__MessagePhoneNumber__c}">
+                                <input type="radio" name="selectedNumber" value="{!n.phonenumber}" checked="true" />
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!NOT(n.phonenumber == smsTask.deskio__MessagePhoneNumber__c)}">
+                                <input type="radio" name="selectedNumber" value="{!n.phonenumber}"/>
+                            </apex:outputPanel>
+                        </apex:actionSupport>
+                    </apex:column>
+                    <apex:column headerValue="Number" value="{!n.phonenumber}"/>
+                    <apex:column headerValue="Type" value="{!n.type}"/>
+                    </apex:pageBlockTable>
+                </apex:outputPanel>
+            </apex:pageBlockSection>
+            <apex:outputPanel id="smsEditor">
+                <apex:pageBlockSection columns="1" title="Write your message" rendered="{!NOT(ISNULL(smsTask.deskio__MessagePhoneNumber__c))}">
+                    <apex:inputField value="{!smsTask.Description}" id="smsBody" label="Message" style="width:300px; height:80px;" onkeyup="updateCharCounter(this, document.getElementById('{!$Component.outputSection.charCounter}'));" />
+                    <apex:pageBlockSectionItem id="outputSection">
+                        <apex:outputLabel for="charCounter">Available Characters</apex:outputLabel>
+                        <apex:outputPanel id="charCounter"></apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <script type="text/javascript">
+                    updateCharCounter(document.getElementById('{!$Component.smsBody}'), document.getElementById('{!$Component.outputSection.charCounter}'));
+                    </script>
+                </apex:pageBlockSection>
+            </apex:outputPanel>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

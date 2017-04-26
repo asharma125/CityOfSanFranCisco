@@ -1,0 +1,160 @@
+<apex:page controller="GenerateSpacePdf" renderAs="pdf"  applyHtmlTag="false" showHeader="false">
+    <head>
+        <style type="text/css" media="print">
+            @page {
+                size: A4 potrate;
+                margin: 5mm;
+                margin-bottom:47mm;
+                
+                @bottom-right {
+                    content: element(footer);
+                }
+            }
+            div.footer {
+                display: block;
+                padding: 5px;
+                position: running(footer);
+            }
+                 
+            .pagenumber:before {
+                content: counter(page);
+            }
+            .pagecount:before {
+                content: counter(pages);
+            }
+            .shadow{
+                box-shadow: 10px 10px 5px #888888;
+            }
+            
+        </style>
+    </head>
+    <div class="footer" >
+        <div style="border:1px solid green;">
+        <table style="width:100%;">
+        <tr><td style="width:60%;">
+            <table style="width:100%;margin:5px;">
+                <tr><td>For more information contact:</td></tr>
+                <tr><td>Ajay Arora</td></tr>
+                <tr><td>Indus Franchise &amp; Retail Consultants</td></tr>
+                <tr><td>9810075973  ajay@indiashowrooms.com/indusfranchise@gmail.com</td></tr>
+            </table>
+            </td>
+            <td style="width:40%;vertical-align: bottom;" align="right">
+                <apex:image value="{!URLFOR($Resource.Indiashowrooms)}" height="100%"/>
+            </td>
+        </tr>
+        </table>
+        </div>
+        <div style="font-size: 11px;">
+            <table style="width:100%;">
+                <tr>
+                    <td style="width:90%;">The information above has been obtained from sources believed reliable. We do not doubt its accuracy but have not verified it and make no guarantee, warranty or representation about it. It is 
+                    your responsibility to independently confirm its accuracy and completeness. Any projections, opinions, assumptions or estimates used are for example only and do not represent the current 
+                    or future performance of the property. You should conduct an individual evaluation with your own advisors as to the suitability of this property.
+                    </td>
+                    <td  style="width:10%;">
+                        Page <span class="pagenumber"/> of <span class="pagecount"/>
+                    </td>
+                </tr>
+           </table>
+        </div>
+    </div>
+    <div class="content">    
+    <apex:form >
+        <apex:variable value="{!0}" var="counter"/>
+        <apex:repeat value="{!spacelist}" var="Space" >
+            <apex:variable value="{!counter+1}" var="counter"/>
+            <table style="width:100%;min-height:400px;page-break-after:{!IF(MOD(counter,2) == 0, 'always','none')};">
+                <tr >
+                    <td style="border:1.5px solid #BA55D3;">
+                        <table style="width:100%;">
+                            <tr>
+                                <td colspan="2" style="align:center;padding:3px;">
+                                    <div align="center" style="font-size: 17px;color: orange;font-weight: bold;">
+                                        <apex:outputField value="{!Space.Old_Signage__c}"/> &nbsp;&nbsp; (<apex:outputField value="{!Space.Property_No__c}" /> &nbsp;&nbsp; <apex:outputField value="{!Space.Space_Location_1__c}"/>  &nbsp;&nbsp; <apex:outputField value="{!Space.Property__r.Location_Sub_new__c}"/>)<br/>
+                                        <div style="font-size: 15px;color:black;font-weight: 500;text-shadow:none;"> Available for Rent: &nbsp;<apex:outputField value="{!Space.Floorwise_Area__c}"/>&nbsp;Sq. Ft. &nbsp; for asking Rent: &nbsp;
+                                            <apex:outputField value="{!Space.Rent_Month__c}"/> per month 
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr> 
+                                <td style="width:60%;padding:8px;"> 
+                                    <div style="background-color: #778899;width:100%;height:215px;">
+                                        <apex:image value="{!URLFOR($Resource.SamplePIc)}" height="215px" width="100%" style="margin-left:-3px;margin-top:-3px" rendered="{!Space.Property__r.Property_Picture__c == null}"></apex:image>
+                                        <!--<apex:image value="{!MID(Space.Property__r.Property_Picture__c,FIND("src=",Space.Property__r.Property_Picture__c)+5,120)}" height="215px" width="100%" style="margin-left:-3px;margin-top:-3px" rendered="{!Space.Property__r.Property_Picture__c != null}"></apex:image>-->
+                                        <apex:image value="{!MID(Space.Property__r.Property_Picture__c,FIND(".com",Space.Property__r.Property_Picture__c)+4,89)}" height="215px" width="100%" style="margin-left:-3px;margin-top:-3px" rendered="{!Space.Property__r.Property_Picture__c != null}"></apex:image>
+                                    </div> 
+                                </td>
+                                <td style="width:40%;padding:8px;height:225px;">
+                                    <table style="width:100%;height:100%;font-weight:500; font-size:14px;padding:3px;border:1px solid orange;" >
+                                        <tr >
+                                            <td style="width:130px;height:22px;"> Covered Area </td><td style="width:20px;"> : </td><td style="width:170px;"><apex:outputField value="{!Space.Covered_Area_Sq_Ft__c}"/> Sq. Ft.</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> Floor </td><td>:</td><td> <apex:outputField value="{!Space.Floor_Rent__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:25px;"> Floorwise Area </td><td>:</td><td><apex:outputField value="{!Space.Floorwise_Area__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> Asking Rent </td><td>:</td><td><apex:outputField value="{!Space.Rent_Month__c}"/>
+                                                <br/>
+                                                <div style="font-size:10px;">(Rent per Sq. ft. {!Space.Rent_PSF_on_Covered_Area__c})</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> May Settle </td><td>:</td><td><apex:outputField value="{!Space.May_Settle_Rent__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> Agreement Type </td><td>:</td><td><apex:outputField value="{!Space.Agreement_Type__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> Entry From </td><td>:</td><td><apex:outputField value="{!Space.Entry_From__c}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height:22px;"> Frontage </td><td>:</td><td><apex:outputField value="{!Space.Frontage_Ft__c}"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding:3px;">
+                                    <apex:outputpanel rendered="{!Space.Property__r.DMD_Link__c != null && Space.Property__r.DMD_Link__c != ''}">
+                                    Click for Virtual Reality Picture Link: &nbsp;&nbsp;&nbsp;
+                                    <a href="http://{!Space.Property__r.DMD_Link__c}" target="_blank"> 
+                                        <img src="{!URLFOR($Resource.DMDLinkIcon)}" height="60%"/>
+                                    </a><br/>
+                                    <i style="font-size: 12px;">Please wait for the browser to load completely and then click the play button, use the mouse and scroll horizontally to move the image in either direction.</i>
+                                    </apex:outputpanel>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr >
+                    <td style="padding:5px;border:1.5px solid #BA55D3;min-height:60px;">
+                        <b>Notes:</b> &nbsp; <apex:outputField value="{!Space.Client_Remarks_Lease__c}"/>
+                    </td>
+                </tr>
+            </table> 
+            <br/>
+        </apex:repeat>
+        <apex:outputpanel rendered="{!showMap}" style="page-break-before:always;">
+        <div style="width:100%;" align="center">
+            Properties map<br/>
+            <img src="{!mapURL}" align="middle" style="width:100%;height:100%;"></img>
+        </div>
+        <br/><br/><br/>
+        <div style="width:100%;">
+        <table style="width:50%;border: 1px solid blue;" align="right">
+            <tr><th style="width:25%;">Notation</th><th>Property Address</th></tr>
+            <apex:repeat value="{!colormap}" var="cm">
+               <tr><td style="color: {!colormap[cm][0]}">{!cm}</td><td>{!colormap[cm][1]}</td></tr>
+            </apex:repeat>
+        </table>
+        </div>
+        </apex:outputpanel> 
+    </apex:form>
+    </div>
+</apex:page>

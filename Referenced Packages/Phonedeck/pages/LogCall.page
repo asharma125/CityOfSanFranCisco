@@ -1,0 +1,133 @@
+<apex:page controller="deskio.LogCallController">
+  <apex:form >   
+    <apex:sectionHeader title="Log Call"/>
+        
+    <apex:pageBlock title="Error" rendered="{!mode == 'ERROR'}">
+        <apex:pageMessage severity="error" strength="3" summary="{!error}" />
+    </apex:pageBlock>        
+        
+    <apex:pageBlock title="Call Already Reported" rendered="{!mode == 'REPORTED'}">
+        <apex:pageMessage severity="warning" strength="3" summary="This call was already reported. Delete the previous Task if you would like to log this call again." />
+        <p><a href="/{!alreadyReportedTaskId}">Click here to view the Task.</a></p>
+    </apex:pageBlock>
+        
+    <apex:pageBlock title="Report Call" mode="edit" rendered="{!mode == 'NORMAL'}">                        
+        <apex:pageMessages />
+        <apex:pageBlockButtons >
+            <apex:commandButton value="Save" action="{!save}"/>
+            <apex:commandButton value="Cancel" action="{!cancel}" immediate="true"/>  
+            <apex:commandButton value="Reset" action="{!reset}" immediate="true"/>                
+        </apex:pageBlockButtons>
+    
+        <apex:pageBlockSection columns="1" title="Call Details">
+            <apex:outputField value="{!callLogger.task.ActivityDate}"/>
+            <apex:outputField value="{!callLogger.task.CallType}"/>
+            <apex:outputText value="{!callLogger.phoneNumber}" label="Phone Number" />
+            <apex:outputText value="{!callLogger.name}" label="Name" rendered="{!NOT(ISNULL(callLogger.name))}" />            
+            <apex:outputText value="{!duration}" label="Duration"/>        
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockSection title="Found Leads and Contacts" id="results" columns="1">
+           <apex:pageBlockTable value="{!results}" var="l" rendered="{!NOT(ISNULL(results))}">
+              <apex:column width="50" headerValue="">
+                  <apex:actionSupport event="onclick" reRender="contactInfo,results,taskResults" immediate="true">
+                      <apex:param name="p1" value="{!l.id}" assignTo="{!callLogger.task.WhoId}"/>                      
+                      <apex:param name="p2" value="{!null}" assignTo="{!callLogger.updateTaskId}" />
+                      <apex:outputPanel rendered="{!l.isSelected}">
+                          <input type="radio" name="selectedContact" value="{!l.id}" checked="true" />
+                      </apex:outputPanel>
+                      <apex:outputPanel rendered="{!NOT(l.isSelected)}">
+                          <input type="radio" name="selectedContact" value="{!l.id}"/>
+                      </apex:outputPanel>
+                  </apex:actionSupport>
+              </apex:column>
+              <apex:column headerValue="Type" value="{!l.objType}"/>
+              <apex:column headerValue="Name" value="{!l.name}"/>
+              <apex:column headerValue="Phone" value="{!l.phone}"/>
+              <apex:column headerValue="Account" value="{!l.account}"/>
+            </apex:pageBlockTable>
+            
+            <apex:outputPanel >
+            <ul style="line-height:150%">
+                <li>
+                    <apex:outputLink value="{!contactEditUrl}" target="_blank">
+                        Create a new Contact
+                        <apex:param name="retURL" value="{!URLENCODE(currentUrl)}"></apex:param>
+                        <apex:param name="con10" value="{!URLENCODE(callLogger.phoneNumber)}"></apex:param>
+                        <apex:param name="name_lastcon2" value="{!URLENCODE(callLogger.name)}"></apex:param>
+                    </apex:outputLink>
+                </li>
+                <li>
+                    <apex:outputLink value="{!leadEditUrl}" target="_blank">
+                        Create a new Lead
+                        <apex:param name="retURL" value="{!URLENCODE(currentUrl)}"></apex:param>
+                        <apex:param name="lea8" value="{!URLENCODE(callLogger.phoneNumber)}"></apex:param>
+                        <apex:param name="name_lastlea2" value="{!URLENCODE(callLogger.name)}"></apex:param>
+                    </apex:outputLink>
+                </li>        
+            </ul>
+            </apex:outputPanel>
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockSection id="contactInfo" columns="1" title="Relate the call">
+            <apex:inputField value="{!callLogger.task.WhoId}" id="inputWhoId">
+                <apex:actionSupport event="onchange" reRender="contactInfo, results, taskResults, main">
+                      <apex:param name="p1" value="{!null}" assignTo="{!callLogger.updateTaskId}" />
+                </apex:actionSupport>
+            </apex:inputField>
+            <apex:inputField value="{!callLogger.task.WhatId}" id="inputWhatId" rendered="{!(LEFT(callLogger.task.WhoId,3)!='00Q')}">
+                <apex:actionSupport event="onchange" reRender="contactInfo,results,taskResults, main">
+                      <apex:param name="p1" value="{!null}" assignTo="{!callLogger.updateTaskId}" />
+                </apex:actionSupport>
+            </apex:inputField>
+        </apex:pageBlockSection>
+        
+        <apex:pageBlockSection title="Select or create a Task" id="taskResults" columns="1">
+            <apex:outputPanel >
+                <apex:actionSupport event="onclick" reRender="contactInfo, results, taskResults, main" immediate="true">
+                    <apex:param name="p1" value="{!null}" assignTo="{!callLogger.updateTaskId}" />
+                    <apex:outputPanel rendered="{!callLogger.isNewTask}">
+                        <input type="radio" name="selectedTask" value="" checked="true" />
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(callLogger.isNewTask)}">
+                        <input type="radio" name="selectedTask" value=""/>
+                    </apex:outputPanel>
+                    Create a new Task
+                </apex:actionSupport>
+            </apex:outputPanel>
+            <apex:pageBlockTable value="{!tasks}" var="t" rendered="{!NOT(ISNULL(tasks))}">
+                <apex:column width="50" headerValue="">
+                    <apex:actionSupport event="onclick" reRender="contactInfo, results, taskResults, main" immediate="true">
+                        <apex:param name="p1" value="{!t.id}" assignTo="{!callLogger.updateTaskId}" />
+                        <apex:outputPanel rendered="{!t.id == callLogger.updateTaskId}">
+                            <input type="radio" name="selectedTask" value="{!t.id}" checked="true" />
+                        </apex:outputPanel>
+                        <apex:outputPanel rendered="{!NOT(t.id == callLogger.updateTaskId)}">
+                            <input type="radio" name="selectedTask" value="{!t.id}"/>
+                        </apex:outputPanel>
+                    </apex:actionSupport>
+                </apex:column>
+                <apex:column headerValue="Subject" value="{!t.Subject}"/>
+                <apex:column headerValue="Status" value="{!t.Status}"/>
+                <apex:column headerValue="Due Date" value="{!t.ActivityDate}"/>
+            </apex:pageBlockTable>
+        </apex:pageBlockSection>
+        
+        <apex:outputPanel id="main">
+            <apex:pageBlockSection columns="1" title="Task Details">        
+                <apex:inputField value="{!callLogger.task.Subject}" style="width:300px" />
+                <apex:inputField value="{!callLogger.task.Description}" style="width:300px;height:100px;" />
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="callResultHelper">Select a Call Result</apex:outputLabel>
+                    <apex:selectList id="callResultHelper" size="1" title="Call Results" style="width:300px" onchange="document.getElementById('{!$Component.callDisposition}').value = this.options[this.selectedIndex].value; document.getElementById('{!$Component.callDisposition}').focus();">
+                    <apex:selectOptions value="{!callLogger.callResultOptions}"/>
+                    </apex:selectList>
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!callLogger.task.CallDisposition}" id="callDisposition" style="width:300px" label="... or set a Custom Result " />
+                <apex:inputField value="{!callLogger.task.Status}"/>
+            </apex:pageBlockSection>
+        </apex:outputPanel>
+    </apex:pageBlock>
+        
+  </apex:form>
+</apex:page>

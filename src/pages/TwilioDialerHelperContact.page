@@ -1,0 +1,25 @@
+<apex:page standardController="Contact"> 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+        j$ = jQuery.noConflict();
+        var Idsent = false;
+       
+        var nIntervId = setInterval(sendId, 2000);
+        function sendId() {
+            var iframe = top.frames["066N00000005WBY"];
+            
+            if(iframe !== undefined && !Idsent){
+                iframe.setParentId('{!Contact.Id}');
+                Idsent = true;
+                stopSendingId();
+            }
+        }
+        function stopSendingId() {
+            clearInterval(nIntervId);
+        }
+        j$(document).ready(function(){
+            
+       });
+       
+    </script>
+</apex:page>

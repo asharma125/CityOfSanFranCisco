@@ -1,0 +1,351 @@
+<apex:page standardController="Invoice__c"  extensions="Invoice_Print"   applyBodyTag="{!p_applyHtmlTag}"   applyHtmlTag="{!p_applyHtmlTag}"   cache="{!p_cache}"   contentType="{!p_contentType}"   docType="{!p_docType}"   expires="{!p_expires}"   language="{!p_language}"   renderAs="{!renderAs}"   rendered="{!p_rendered}"   setup="{!p_setup}"   showChat="{!p_showChat}"   showHeader="{!p_showHeader}"   sidebar="{!p_sidebar}"   standardStylesheets="{!p_standardStylesheets}"   wizard="{!p_wizard}" >
+<head>
+<script src="/soap/ajax/31.0/connection.js"></script>
+<script src="/soap/ajax/31.0/apex.js"></script>
+<script type="text/javascript">
+	jQuery.noConflict();
+	beenFocused = true;
+	
+	if (typeof SkyEditor === "undefined") {
+		SkyEditor = {};
+	}
+	SkyEditor.messages = {
+		REQUIRED_FIELD_MISSING: "{!Label.RequiredFieldMissing}",
+		UNDOCUMENTED: "{!Label.Undocumented}",
+		DELETEERROR: "{!Label.DeleteError}",
+		SAVESUCCESS: "{!Label.SaveSuccess}",
+		CONFIRMMESSAGE: "{!Label.ConfirmMessage}",
+		UPDATEMESSAGE: "{!Label.UpdateMessage}",
+		CONDITIONSEARCHERROR: "{!Label.ConditionSearchError}",
+		INVALIDSESSION: "{!Label.InvalidSession}",
+		ERRORMESSAG: "{!Label.ErrorMessage}",
+		NOTSELECTERROR: "{!Label.NotSelectError}",
+		NOTROWSELECTERROR: "{!Label.NotRowSelectError}",
+		DELETECONFIRM: "{!Label.DeleteConfirm}",
+		BULKEDITDIALOGTITLE: "{!Label.customBulkEditButtonLabel}",
+		REPORTOBJECTNOTFOUND: "{!Label.ReportObjectNotFound}",
+		DATEFORMATERROE: "{!Label.DateFormatError}",
+		NUMBERFORMATERROE: "{!Label.NumberFormatError}",
+		NUMBERVALUEENPTY: "{!Label.NumberValueEmpty}",
+		CANVASCHECK: "{!Label.CanvasCheck}",
+		REWRITECHECK: "{!Label.RewriteCheck}",
+		QUERY_PAGING_CONFIRMATION: "{!Label.QueryPagingConfirmation}",
+		PAGE_NOT_SUPPORTED_ON_S1: "{!JSENCODE(Label.PageNotSupportedOnS1)}",
+		PRICEBOOK_CHANGE:"{!JSENCODE(Label.pricebookChange)}",
+		BULKEDITNOEDITABLEFIELD:"{!Label.BulkEditNoEditableFieldMessage}"
+	};
+	SkyEditor.labels = {
+		CANVASTITLE: "{!Label.CanvasTitle}",
+		CheckAllText: "{!Label.CheckAllText}",
+		UnCheckAllText: "{!Label.UnCheckAllText}",
+		NoneSelectedText: "{!Label.NoneSelectedText}",
+		SelectedText: "{!Label.SelectedText}",
+ 		OptionLabelNon: "{!Label.None}",
+		SelectButtonLabel: "{!label.SelectRecord}",
+		SearchButtonLabel: "{!customSearchButtonLabel}",
+		closeButton:"{!label.customBulkEditWindowCloseButtonLabel}",
+		cancelButton:"{!customCancelButtonLabel}"
+	};
+		
+	SkyEditor.SessionId = "{!$Api.Session_ID}";
+	SkyEditor.CurrentPageName = "{!$CurrentPage.Name}";
+	SkyEditor.UserId = "{!$User.Id}";
+	SkyEditor.UserLanguage = "{!userLanguage}";
+	SkyEditor.namespace = "SkyEditor2";
+	SkyEditor.PageMode = "{!mode}";
+	SkyEditor.RecordId = "{!record.Id}";
+	SkyEditor.mainObject = "Invoice__c";
+	SkyEditor.setProperty && SkyEditor.setProperty("labels.Picklist.none", "{!label.none}");
+	SkyEditor.canvasSetting = {};
+	SkyEditor.originCanvasSetting = {};
+	SkyEditor.penImages = {
+							"2":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen2.gif')}",
+							"3":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen3.gif')}",
+							"4":"{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/images/pen4.gif')}"
+						  };
+	SkyEditor.canvasFlag = {};
+	SkyEditor.isShowDetailPanel = {!sve_detailPageName != null};
+	SkyEditor.isPageInit = {!isPageInit};
+	
+	SkyEditor.searchConditionFromTo="";
+	SkyEditor.searchConditionItem="";
+	SkyEditor.Mod.Sidebar.ModifiedPinMethod();
+	sforce.connection.sessionId = "{!$Api.SESSION_ID}";
+	SkyEditor.afterScriptLoaded();
+</script>
+
+
+<style>
+{!HTMLENCODE(pdfStyleString)}
+</style></head>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery-ui-1.8.19.custom.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_tablesorter.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/jquery.multiselect.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/skyeditor2_styles.css')}"/>
+<apex:stylesheet value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/css/pure-grids-nr-min.css')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'json2.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-1.7.2.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery-ui-1.8.19.custom.min.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.math.1.0.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.bgiframe.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.multiselect.min.js')}"/>
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/skyeditor2_core.js')}" />
+<apex:includeScript value="{!URLFOR($Resource.SkyEditor2__skyEditor2, 'skyeditor2/3_7/js/jquery.layout.min.js')}" />
+<script type="text/javascript">
+
+</script>
+
+<apex:outputPanel id="messagesPanel">
+<apex:pageMessages id="sveErrMsgs" rendered="{!errorMessages == ''}"/>
+<apex:pageMessage summary="{!errorMessages}" severity="error" strength="2" escape="false" rendered="{!errorMessages != ''}"/>
+<apex:pageMessage summary="{!infoMessages}" severity="info" strength="2" escape="false" rendered="{!infoMessages != ''}"/>
+</apex:outputPanel>
+
+<img src="/img/loading32.gif" id="SkyeditorLoagingImage" style="display:none;"/>
+
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%;" ><tr><td>
+<apex:outputPanel rendered="{! NOT(hidePageBody)}" id="pagePanel" styleClass="base" layout="block">
+<apex:outputPanel style="position:relative;" >
+</apex:outputPanel><apex:form id="sve_form1"   styleClass="sve_form1"   >
+<apex:inlineEditSupport event="ondblclick" showOnEdit="" hideOnEdit=""/>
+<apex:outputPanel layout="block"   style="position:relative;width:1024px;height:1447px;" >
+<img   src="{!URLFOR($Resource.Invoice_Sample)}"   style="width:1024px;height:1447px;left:0px;top:0px;position:absolute;" /><apex:outputPanel styleclass="fieldwrapper " style="left:875px;top:261px;color:#000000;font-size:10pt;font-weight:Bold;position:absolute;" >
+			<apex:outputField id="Component25"     value="{!record.Invoice_No__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Invoice_No__c.createable},{!$ObjectType.Invoice__c.fields.Invoice_No__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component25}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:100px;top:326px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component31"     value="{!record.Contact__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Contact__c.createable},{!$ObjectType.Invoice__c.fields.Contact__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component31}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:100px;top:350px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component37"     value="{!record.Account__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Account__c.createable},{!$ObjectType.Invoice__c.fields.Account__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component37}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:100px;top:376px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component4"     value="{!record.Billing_Address__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Billing_Address__c.createable},{!$ObjectType.Invoice__c.fields.Billing_Address__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component4}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:120px;top:549px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component5"     value="{!record.Invoice_Date__c}" >
+			<apex:inlineEditSupport rendered="false"/>
+		</apex:outputField>
+		</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:291px;top:549px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component8"     value="{!record.Terms__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Terms__c.createable},{!$ObjectType.Invoice__c.fields.Terms__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component8}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:571px;top:549px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component9"     value="{!record.Due_Date__c}" >
+			<apex:inlineEditSupport rendered="false"/>
+		</apex:outputField>
+		</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:638px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component14"     value="{!record.Amount_1__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Amount_1__c.createable},{!$ObjectType.Invoice__c.fields.Amount_1__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component14}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:628px;top:639px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component12"     value="{!record.Amount_1__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Amount_1__c.createable},{!$ObjectType.Invoice__c.fields.Amount_1__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component12}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:66px;top:640px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component10"     value="{!record.Item_1__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Item_1__c.createable},{!$ObjectType.Invoice__c.fields.Item_1__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component10}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:256px;top:640px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component11"     value="{!record.Description_1__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Description_1__c.createable},{!$ObjectType.Invoice__c.fields.Description_1__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component11}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:66px;top:765px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component16"     value="{!record.Item_2__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Item_2__c.createable},{!$ObjectType.Invoice__c.fields.Item_2__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component16}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:256px;top:765px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component15"     value="{!record.Description_2__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Description_2__c.createable},{!$ObjectType.Invoice__c.fields.Description_2__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component15}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:628px;top:765px;color:#000000;font-size:10pt;font-weight:Normal;position:absolute;" >
+			<apex:outputField id="Component13"     value="{!record.Amount_2__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Amount_2__c.createable},{!$ObjectType.Invoice__c.fields.Amount_2__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component13}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:765px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component17"     value="{!record.Amount_2__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Amount_2__c.createable},{!$ObjectType.Invoice__c.fields.Amount_2__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component17}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:1064px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component26"     value="{!record.Sub_Total__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Sub_Total__c.createable},{!$ObjectType.Invoice__c.fields.Sub_Total__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component26}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:1095px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component23"     value="{!record.Total_Service_Tax_Amount__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Total_Service_Tax_Amount__c.createable},{!$ObjectType.Invoice__c.fields.Total_Service_Tax_Amount__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component23}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:775px;top:1110px;width:40px;color:#000000;font-size:8pt;font-weight:Normal;position:absolute;display:block;" >
+			<apex:outputField id="Component19"     value="{!record.Service_Tax__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Service_Tax__c.createable},{!$ObjectType.Invoice__c.fields.Service_Tax__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component19}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:1139px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component27"     value="{!record.Total__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Total__c.createable},{!$ObjectType.Invoice__c.fields.Total__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component27}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:1166px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component21"     value="{!record.Late_Fee__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Late_Fee__c.createable},{!$ObjectType.Invoice__c.fields.Late_Fee__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component21}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel id="Component1_Wrapper" layout="{!IF(p_isPdf==true,'block','')}" style="left:822px;top:1194px;position:absolute;">
+<apex:outputText escape="false"   id="Component1"   value="(-)"   style="color:#000000;font-size:1.0em;font-weight:Normal;" />
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:846px;top:1196px;width:110px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component22"     value="{!record.Payment_Made__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Payment_Made__c.createable},{!$ObjectType.Invoice__c.fields.Payment_Made__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component22}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+<apex:outputPanel styleclass="fieldwrapper " style="left:836px;top:1241px;width:120px;color:#000000;font-size:10pt;font-weight:Normal;text-align:right;position:absolute;display:block;" >
+			<apex:outputField id="Component24"     value="{!record.Total__c}" />
+			<script type="text/javascript">
+				var inlineFlag = SkyEditor.inlineEditFieldAuth("{!record.Id}",{!$ObjectType.Invoice__c.fields.Total__c.createable},{!$ObjectType.Invoice__c.fields.Total__c.updateable},SkyEditor.isSmallMonitor());
+				var inlineElm = SkyEditor.getInlineEditHilightTarget("{!$Component.Component24}", {
+			isUnescape:  false ,
+			isFreeLayout:  true 		});
+		SkyEditor.inlineEditFieldStyle(inlineElm,inlineFlag);
+	</script>
+</apex:outputPanel>
+</apex:outputPanel></apex:form><script type="text/javascript">
+function aggregateCalc_all(triggerId) {
+}
+</script>
+</apex:outputPanel>
+</td></tr></table>
+<div id="CustomLookupForSFoneDialog" style="display:none;" >
+    <apex:pageBlock >
+        <div id="CustomLookUpForSFoneConditons">
+        </div> 
+        <div id="CustomLookUpForSFoneTextConditons" style="clear:left;">
+        </div><br style="clear:left;" />
+    </apex:pageBlock>
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top" styleClass="CustomLookUpForSFoneButtons">
+        </apex:pageBlockButtons>
+        <div style="height:480px; overflow-y:scroll;" >
+            <table class="list" id="CustomLookUpForSFoneListTable" cellspacing="0" cellpadding="0" border="0" >
+                <thead class="CustomLookUpForSFoneListHeader">
+                </thead>
+                <tbody class="CustomLookUpForSFoneListBody"> 
+                </tbody>
+            </table>
+        </div>
+    </apex:pageBlock>
+</div>
+</apex:page>

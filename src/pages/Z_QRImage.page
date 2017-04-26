@@ -1,0 +1,11 @@
+<apex:page standardController="Ownership__c" docType="html-5.0" showHeader="false" standardStylesheets="false" >
+<style type="text/css">
+p {padding-left: 100px; padding-top: 120px;margin-bottom: 120px;}
+</style>
+<apex:form >
+<p>
+<image src="http://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://dev1-rentedproperties.cs6.force.com/documentacknowledgementform?id={!id}"/>
+
+</p>
+</apex:form>
+</apex:page>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fields>
+        <fullName>CallDurationInSecondsFormatted__c</fullName>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <formula>IF(CallDurationInSeconds &gt;= 3600, LPAD(TEXT(FLOOR(CallDurationInSeconds / 3600)), 2, &apos;0&apos;) &amp; &apos;:&apos;, &apos;&apos;) &amp; LPAD(TEXT(FLOOR(MOD(CallDurationInSeconds, 3600) / 60)), 2, &apos;0&apos;) &amp; &apos;:&apos; &amp; LPAD(TEXT(MOD(CallDurationInSeconds, 60)), 2, &apos;0&apos;)</formula>
+        <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+        <label>Formatted Call Duration</label>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Call_Result_Helper__c</fullName>
+        <deprecated>false</deprecated>
+        <description>This field is used to give predefined options for the user. Only its values are used in the LogCall screen. There is no need to put the field to a view.</description>
+        <externalId>false</externalId>
+        <label>Call Result Helper</label>
+        <required>false</required>
+        <type>Picklist</type>
+        <valueSet>
+            <valueSetDefinition>
+                <sorted>false</sorted>
+                <value>
+                    <fullName>Busy</fullName>
+                    <default>false</default>
+                </value>
+                <value>
+                    <fullName>Left Voicemail</fullName>
+                    <default>false</default>
+                </value>
+                <value>
+                    <fullName>Scheduled Follow-up</fullName>
+                    <default>false</default>
+                </value>
+                <value>
+                    <fullName>Scheduled Meeting</fullName>
+                    <default>false</default>
+                </value>
+                <value>
+                    <fullName>Not interested</fullName>
+                    <default>false</default>
+                </value>
+                <value>
+                    <fullName>Not reachable</fullName>
+                    <default>false</default>
+                </value>
+            </valueSetDefinition>
+        </valueSet>
+    </fields>
+    <fields>
+        <fullName>MessagePhoneNumber__c</fullName>
+        <deprecated>false</deprecated>
+        <description>The phone number the SMS will be / was sent to</description>
+        <externalId>false</externalId>
+        <label>Message Phone Number</label>
+        <length>25</length>
+        <required>false</required>
+        <type>Text</type>
+        <unique>false</unique>
+    </fields>
+</CustomObject>

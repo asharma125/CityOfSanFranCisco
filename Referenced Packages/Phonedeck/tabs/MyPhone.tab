@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Shows details about your own Phonedeck CSI phone or gives instructions how to connect one.</description>
+    <label>My Phone</label>
+    <mobileReady>true</mobileReady>
+    <motif>Custom75: IP Phone</motif>
+    <page>MyPhone</page>
+</CustomTab>

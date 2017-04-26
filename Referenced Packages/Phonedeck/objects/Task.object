@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <webLinks>
+        <fullName>SendSMS</fullName>
+        <availability>online</availability>
+        <displayType>massActionButton</displayType>
+        <encodingKey>UTF-8</encodingKey>
+        <linkType>url</linkType>
+        <masterLabel>Send SMS</masterLabel>
+        <openType>replace</openType>
+        <protected>false</protected>
+        <requireRowSelection>false</requireRowSelection>
+        <url>{!IF(NOT(ISNULL(Contact.Id)), URLFOR(&apos;/apex/deskio__SendSMS&apos;, null,[whoId=Contact.Id]),IF(NOT(ISNULL(Lead.Id)), URLFOR(&apos;/apex/deskio__SendSMS&apos;, null,[whoId=Lead.Id]),&apos;&apos;))}</url>
+    </webLinks>
+</CustomObject>

@@ -1,0 +1,3 @@
+<apex:page controller="GenerateTwiMLForDialerClass" showheader="false" contentType="text/xml" >
+    {!TwiML}
+</apex:page>

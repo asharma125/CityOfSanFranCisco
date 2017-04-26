@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomLabels xmlns="http://soap.sforce.com/2006/04/metadata">
+    <labels>
+        <fullName>DirectionIncoming</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Incoming direction</shortDescription>
+        <value>Incoming</value>
+    </labels>
+    <labels>
+        <fullName>DirectionOutgoing</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Outgoing direction</shortDescription>
+        <value>Outgoing</value>
+    </labels>
+    <labels>
+        <fullName>action_get_started</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Button label for get started</shortDescription>
+        <value>Get started</value>
+    </labels>
+    <labels>
+        <fullName>action_refresh</fullName>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Refresh Button Label</shortDescription>
+        <value>Refresh</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_answer</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Answer call Button label</shortDescription>
+        <value>Answer</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_call</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Call Button Label</shortDescription>
+        <value>Call</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_cancel</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Cancel button label</shortDescription>
+        <value>Cancel</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_dismiss</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Dismiss Button Label</shortDescription>
+        <value>Dismiss</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_end</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>End Call Button label</shortDescription>
+        <value>End call</value>
+    </labels>
+    <labels>
+        <fullName>call_controls_report</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Report call Button label</shortDescription>
+        <value>Log</value>
+    </labels>
+    <labels>
+        <fullName>call_state_active</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Call status: Active</shortDescription>
+        <value>Active:</value>
+    </labels>
+    <labels>
+        <fullName>call_state_calling</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Call status: Calling</shortDescription>
+        <value>Calling:</value>
+    </labels>
+    <labels>
+        <fullName>call_state_ended</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Call status: Ended</shortDescription>
+        <value>Call ended:</value>
+    </labels>
+    <labels>
+        <fullName>call_state_ringing</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Call status: Ringing</shortDescription>
+        <value>Ringing:</value>
+    </labels>
+    <labels>
+        <fullName>error_call_no_number</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message when no number was entered</shortDescription>
+        <value>Please enter a valid number to start a call.</value>
+    </labels>
+    <labels>
+        <fullName>error_call_timed_out</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message for timed out call</shortDescription>
+        <value>the connection is interrupted. Please check your network and phone.</value>
+    </labels>
+    <labels>
+        <fullName>error_command_not_connected</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message when BT-Phone is not connected</shortDescription>
+        <value>your iPhone is not connected over Bluetooth</value>
+    </labels>
+    <labels>
+        <fullName>error_command_not_supported</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message when command not supported</shortDescription>
+        <value>the command or number is not supported.</value>
+    </labels>
+    <labels>
+        <fullName>error_command_timed_out</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message when command timed out</shortDescription>
+        <value>command timed out. Please check your network and phone.</value>
+    </labels>
+    <labels>
+        <fullName>error_command_unknown_error</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Error message when command has unknown error</shortDescription>
+        <value>an unknown error occured. Please try again.</value>
+    </labels>
+    <labels>
+        <fullName>error_title</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Title for error popup</shortDescription>
+        <value>Sorry,</value>
+    </labels>
+    <labels>
+        <fullName>input_default_log</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Default value log input field</shortDescription>
+        <value>Type notes here...</value>
+    </labels>
+    <labels>
+        <fullName>input_default_number</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Default value phonenumber input field</shortDescription>
+        <value>Type a number</value>
+    </labels>
+    <labels>
+        <fullName>input_default_subject</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Default value subject input field</shortDescription>
+        <value>Subject</value>
+    </labels>
+    <labels>
+        <fullName>private_number</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Label for private number</shortDescription>
+        <value>Private</value>
+    </labels>
+    <labels>
+        <fullName>report_call_direction_incoming</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Log message default value for incoming calls</shortDescription>
+        <value>Incoming call</value>
+    </labels>
+    <labels>
+        <fullName>report_call_direction_outgoing</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Log message default value for outgoing calls</shortDescription>
+        <value>Outgoing call</value>
+    </labels>
+    <labels>
+        <fullName>text_idle_connected</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Information about connected phone</shortDescription>
+        <value>You are connected with
+%1$s</value>
+    </labels>
+    <labels>
+        <fullName>text_nophone</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Information about no connected phone</shortDescription>
+        <value>You do not have a phone with call support connected to your account.</value>
+    </labels>
+    <labels>
+        <fullName>text_nophone_installed</fullName>
+        <language>en_US</language>
+        <protected>true</protected>
+        <shortDescription>Ask user if app is installed on phone</shortDescription>
+        <value>Done this already?</value>
+    </labels>
+</CustomLabels>

@@ -1,0 +1,84 @@
+<apex:page standardController="Property__c" extensions="CLS_Location" showHeader="true" sidebar="false">
+<!--<apex:page standardController="Location__c" extensions="CLS_Location" showHeader="true" sidebar="false">-->
+
+
+<script language="JavaScript" type="text/javascript">
+function CloseAndRefresh(){
+parent.window.opener.location='/{!Property__c.id}';
+      
+  }
+</script>
+
+
+ <apex:form >
+   <apex:pageBlock rendered="{!Edit}" >
+    
+    <apex:pageBlockButtons >
+    <apex:commandButton action="{!MYsave}" value=" Save" oncomplete="window.top.location='/{!Property__c.id}'; return false"> </apex:commandButton>
+     
+    <apex:commandButton value="Cancel" oncomplete="window.top.location='/{!Property__c.id}'; return false"></apex:commandButton>
+    </apex:pageBlockButtons>
+    
+    <apex:pageBlockSection columns="2">
+   <apex:pageblockSectionItem >
+     <apex:outputLabel value="Location City" for="city"/>
+     <apex:selectList value="{!selectCity}" id="city" size="1" >
+     <apex:selectOptions value="{!city}"/>
+     
+     <apex:actionSupport event="onchange" rerender="prop,propcat,location,locationsub"/>
+    </apex:selectList>
+  </apex:pageblockSectionItem>
+  
+  <apex:pageblockSectionItem >
+     <apex:outputLabel value="Property Type" for="prop"/>
+     <apex:selectList value="{!selectPropType}" id="prop" size="1" disabled="{!ISNULL(selectCity)}">
+     <apex:selectOptions value="{!proptype}"/>
+      <apex:actionSupport event="onchange" rerender="propcat,location,locationsub"/>
+      
+    </apex:selectList>
+  </apex:pageblockSectionItem>
+  
+     <apex:pageblockSectionItem >
+     <apex:outputLabel value="Property Category" for="propcat"/>
+     <apex:selectList value="{!selectPropCat}" id="propcat" size="1" disabled="{!(ISNULL(selectPropType) || ISNULL(selectCity))}">
+   <apex:selectOptions value="{!propcat}"/>
+   <apex:actionSupport event="onchange" rerender="location,locationsub"/>
+    </apex:selectList>
+  </apex:pageblockSectionItem>
+  
+  <apex:pageblockSectionItem >
+     <apex:outputLabel value="Location" for="location"/>
+     <apex:selectList value="{!selectLocation}" id="location" size="1" disabled="{!(ISNULL(selectPropCat)||ISNULL(selectPropType) || ISNULL(selectCity))}">
+    <apex:selectOptions value="{!location}"/>
+    <apex:actionSupport event="onchange" rerender="locationsub"/>
+    </apex:selectList>
+  </apex:pageblockSectionItem>
+  
+ <apex:pageblockSectionItem helptext="*Select Multiple Option With Cntrl Key">
+     <apex:outputLabel value="Location Sub" for="locationsub"/>
+     <apex:selectList value="{!selectLocationsub}" id="locationsub" size="1" disabled="{!(ISNULL(selectLocation)||ISNULL(selectPropCat)||ISNULL(selectPropType) || ISNULL(selectCity))}" multiselect="true">
+     <apex:selectOptions value="{!locationsub}" />
+    </apex:selectList>
+    
+  </apex:pageblockSectionItem>
+
+    </apex:pageBlockSection>  
+    </apex:pageBlock>
+    
+    <apex:pageBlock rendered="{!(edit==false)}">
+    <apex:pageBlockButtons >
+   <apex:commandButton action="{!MYEdit}" value=" Edit"> </apex:commandButton>
+    </apex:pageBlockButtons>
+    <apex:pageBlockSection columns="2">
+    <apex:outputField value="{!Property__c.Location_City__c}"/>
+    <apex:outputField value="{!Property__c.Prop_type__c}"/>
+    <apex:outputField value="{!Property__c.Prop_Category__c}"/>
+    <apex:outputField value="{!Property__c.Location__c}"/>
+    <apex:outputField value="{!Property__c.Location_Sub__c}"/>
+    
+    </apex:pageBlockSection>
+    </apex:pageBlock>
+    
+   
+  </apex:form>
+</apex:page>

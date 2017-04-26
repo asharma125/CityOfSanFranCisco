@@ -1,0 +1,69 @@
+<apex:page controller="deskio.DashboardController" title="Phonedeck" id="pddashboard">
+    <html lang="en">
+    <head>
+        <title>Phonedeck</title>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"></meta>
+        <apex:stylesheet value="{!URLFOR($Resource.deskio__DashboardResources, '/css/style.min.css')}" />
+        <apex:includeScript value="/support/api/29.0/interaction.js" />
+        <apex:includeScript value="/support/console/29.0/integration.js"/>
+		<apex:includeScript value="{!URLFOR($Resource.deskio__DashboardResources, '/js/3rdParty.min.js')}" />
+		<apex:includeScript value="{!URLFOR($Resource.deskio__DashboardResources, '/js/Dashboard.min.js')}" />
+    </head>
+    <body>   
+        <div class="dashboard" id="csiDashboard">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12 less-padding">
+                        <div id="errorWrapper" class="boxWrapper container-fluid"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 less-padding">
+                        <div id="activeCallInfoWrapper" class="boxWrapper container-fluid"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-9 less-padding pd-mainarea">
+                        <div id="tasklistWrapper" class="boxWrapper container-fluid"></div>
+                        <div id="callHistoryWrapper" class="boxWrapper container-fluid"></div>
+                    </div>
+                    <div class="col-md-3 less-padding pd-sidebar">
+                        <div id="calendarWrapper" class="boxWrapper container-fluid collapsible collapsed">
+                        </div>
+                        <div id="contactsWrapper" class="boxWrapper container-fluid collapsible collapsed">
+                        </div>
+                        <div id="scratchpadWrapper" class="boxWrapper container-fluid collapsible collapsed">
+                        </div>
+                    </div>
+                </div>
+            </div> 
+        </div>
+        <script type="text/javascript">        
+            var tasks = {!(tasksForToday)};
+            var calls = {!(callsForToday)};
+        	var activeCalls = {!(activeCalls)};
+        	var userInfo = {!(userInfo)};
+            var channelKey = '{!JSENCODE(channelKey)}';
+        	var taskStatusValues = {!(taskStatusValues)};
+        	var taskPriorityValues = {!(taskPriorityValues)};
+            var data = {
+                taskListData: tasks,
+                callHistoryData: calls,
+                activeCallData: activeCalls,
+                scratchpadText: '{!JSENCODE(scratchpadText)}',
+                userInfoData: userInfo
+            };
+        
+            var options = {
+                imagePath: '{!URLFOR($Resource.DashboardResources, 'img')}'.split("?")[0]+'/',
+                channelKey: channelKey,
+                taskStatusValues: taskStatusValues,
+                taskPriorityValues: taskPriorityValues
+            };
+            $(document).ready(function() {
+            	var dashboard = new Dashboard(data, options);
+            });
+        </script>
+    </body>
+</html>
+</apex:page>

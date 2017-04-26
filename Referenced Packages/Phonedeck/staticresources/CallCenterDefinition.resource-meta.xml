@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
+    <cacheControl>Private</cacheControl>
+    <contentType>text/xml</contentType>
+    <description>Call center definition file for Phonedeck CSI. Download this file and import it at Setup &gt; Customize &gt; Call Center &gt; Call Centers.</description>
+</StaticResource>
