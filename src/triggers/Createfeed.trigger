@@ -12,6 +12,7 @@ trigger Createfeed on Requirement__c (after insert, after update){
 	      	post.Body = req.Deal_Marketing_Notes__c;
 	      	post.CreatedById = userinfo.getuserid();
 	      	feeditemlist.add(post );
+		System.debug('This is the test debug');
     	} 
     }
     
